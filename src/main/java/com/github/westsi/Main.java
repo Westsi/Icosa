@@ -1,17 +1,21 @@
 package com.github.westsi;
 
 import com.github.westsi.browser.Browser;
+import com.github.westsi.browser.BrowserTab;
 
+import javax.swing.*;
 import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
         System.out.println("Welcome to Icosa!");
         System.out.println("Xonize Inc.");
-        Browser browser = Browser.getInstance();
         Scanner userInput = new Scanner(System.in);
         System.out.println("Enter URL: ");
         String url = userInput.nextLine();
+        Browser browser = Browser.getInstance();
         browser.LoadWebPage(url);
+        browser.LoadWebPage("https://google.com");
+        browser.LoadWebPage("https://hweeo");
     }
 }

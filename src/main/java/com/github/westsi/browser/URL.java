@@ -21,4 +21,9 @@ public class URL {
         HttpResponse<String> response = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build().send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    @Override
+    public String toString() {
+        return url;
+    }
 }

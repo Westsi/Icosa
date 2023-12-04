@@ -1,14 +1,28 @@
 package com.github.westsi.browser;
 
+import com.github.westsi.browser.util.Triplet;
+
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import static java.awt.BorderLayout.EAST;
+
 public class Browser {
     private static Browser browser;
-    private JFrame frame;
+    private final JFrame frame;
+
+    private JTabbedPane tabbedPane;
+
+    private final Integer WIDTH = 720;
+    private final Integer HEIGHT = 480;
+
+    private final Integer refreshRate = 1;
 
     private Browser() {
         this.frame = new JFrame("Xonize Icosa");
@@ -18,15 +32,27 @@ public class Browser {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        frame.setResizable(true);
+        frame.setResizable(true); // TODO: make WIDTH and HEIGHT work with this
         frame.setLocationByPlatform(true);
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Menu");
         menu.add(new JMenuItem("Reload"));
         menuBar.add(menu);
+        tabbedPane = new JTabbedPane();
+        frame.setContentPane(tabbedPane);
         frame.setJMenuBar(menuBar);
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png")));
-        frame.setSize(720, 480);
+        frame.setSize(WIDTH, HEIGHT);
+        frame.setVisible(true);
+
+        ActionListener al = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                System.out.println("rerendering global window");
+                frame.repaint();
+            }
+        };
+        Timer timer = new Timer(1000/refreshRate, al);
+        timer.start();
     }
 
     public static Browser getInstance() {
@@ -36,48 +62,9 @@ public class Browser {
         return browser;
     }
 
-    public void LoadWebPage(String requrl) {
-        URL url = new URL(requrl);
-        String body = "";
-        try {
-            body = url.Request();
-        } catch (URISyntaxException e) {
-            body = "<html><body><h1>Incorrect URI.</h1></body></html>";
-        }  catch (InterruptedException e) {
-            body = "<html><body><h1>Page load was interrupted.</h1></body></html>";
-        } catch (Exception e) {
-            body = "<html><body><h1>Something went wrong.</h1></body></html>";
-        }
-        this.RenderWebPage(body);
-    }
-
-    public void RenderWebPage(String body) {
-        String text = lex(body);
-
-        JScrollBar scrollBar = new JScrollBar(JScrollBar.VERTICAL, 30, 40, 0, 500);
-
-        JTextArea textArea = new JTextArea(3000, 50);
-        textArea.setWrapStyleWord(true);
-        textArea.setEditable(false);
-        textArea.append(text);
-
-        // TODO: scrollbar renders but doesn't actually scroll anything
-
-        frame.getContentPane().add(scrollBar, BorderLayout.EAST);
-        frame.getContentPane().add(textArea);
-
-        frame.setVisible(true);
-    }
-    
-    private String lex(String body) {
-        boolean inTag = false;
-        String text = "";
-        for (int i=0, n=body.length(); i<n; i+=Character.charCount(body.codePointAt(i))) {
-            char ch = (char)body.codePointAt(i);
-            if (ch == '<') inTag = true;
-            else if (ch == '>') inTag = false;
-            else if (!inTag) text = text + ch;
-        }
-        return text;
+    public void LoadWebPage(String url) {
+        BrowserTab bt = new BrowserTab(url, refreshRate);
+        tabbedPane.add(bt.getName(), bt);
+        bt.LoadWebPage();
     }
 }
