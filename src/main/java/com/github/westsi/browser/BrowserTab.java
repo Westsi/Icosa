@@ -28,9 +28,14 @@ public class BrowserTab extends JPanel {
     private ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
     private String text = "Loading...";
 
-    public BrowserTab(String url, Integer refreshRate) {
+    private Integer width;
+    private Integer height;
+
+    public BrowserTab(String url, Integer refreshRate, Integer width, Integer height) {
         this.refreshRate = refreshRate;
         this.url = new URL(url);
+        this.height = height;
+        this.width = width;
     }
 
     @Override
@@ -40,9 +45,11 @@ public class BrowserTab extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        System.out.println("rerendering tab");
+        System.out.println("rerendering tab " + url);
         super.paintComponent(g);
-        g.drawString(this.text, 100, 100);
+        for (Triplet<Integer, Integer, String> renderchunk : displayList) {
+            g.drawString(renderchunk.getThird(), renderchunk.getFirst(), renderchunk.getSecond());
+        }
     }
 
     public void LoadWebPage() {
@@ -57,25 +64,24 @@ public class BrowserTab extends JPanel {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
         }
         this.text = lex(body);
-//        this.displayList = this.LayoutWebPage(text);
-        this.paintComponent(this.getGraphics());
+        this.displayList = this.LayoutWebPage(text);
     }
 
-//    public ArrayList<Triplet<Integer, Integer, String>> LayoutWebPage(String text) {
-//        ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
-//        Integer cursorX = HSTEP;
-//        Integer cursorY = VSTEP;
-//        for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
-//            char ch = (char) text.codePointAt(i);
-//            displayList.add(new Triplet<>(cursorX, cursorY, ((Character) ch).toString()));
-//            cursorX += HSTEP;
-//            if (cursorX >= this.WIDTH - HSTEP) {
-//                cursorY += VSTEP;
-//                cursorX = HSTEP;
-//            }
-//        }
-//
-//        return displayList;
-//    }
+    public ArrayList<Triplet<Integer, Integer, String>> LayoutWebPage(String text) {
+        ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
+        Integer cursorX = HSTEP;
+        Integer cursorY = VSTEP;
+        for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
+            char ch = (char) text.codePointAt(i);
+            displayList.add(new Triplet<>(cursorX, cursorY, ((Character) ch).toString()));
+            cursorX += HSTEP;
+            if (cursorX >= this.width - HSTEP) {
+                cursorY += VSTEP;
+                cursorX = HSTEP;
+            }
+        }
+
+        return displayList;
+    }
 
 }

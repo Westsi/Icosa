@@ -63,7 +63,7 @@ public class Browser {
     }
 
     public void LoadWebPage(String url) {
-        BrowserTab bt = new BrowserTab(url, refreshRate);
+        BrowserTab bt = new BrowserTab(url, refreshRate, WIDTH, HEIGHT);
         tabbedPane.add(bt.getName(), bt);
         bt.LoadWebPage();
     }
