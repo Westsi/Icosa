@@ -11,6 +11,6 @@ public class HTMLParser {
             else if (ch == '>') inTag = false;
             else if (!inTag) text.append(ch);
         }
-        return text.toString();
+        return text.toString() + "END OF FILE";
     }
 }

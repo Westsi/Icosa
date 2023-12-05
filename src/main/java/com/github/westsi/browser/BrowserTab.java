@@ -4,10 +4,7 @@ import com.github.westsi.browser.util.Triplet;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
@@ -36,6 +33,34 @@ public class BrowserTab extends JPanel {
         this.url = new URL(url);
         this.height = height;
         this.width = width;
+        this.setFocusable(true);
+
+        this.addMouseWheelListener(e -> {
+            String message;
+            int notches = e.getWheelRotation();
+            if (notches < 0) {
+                message = "Mouse wheel moved UP "
+                        + -notches + " notch(es)" + "\n";
+            } else {
+                message = "Mouse wheel moved DOWN "
+                        + notches + " notch(es)" + "\n";
+            }
+            if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                message += "Scroll type: WHEEL_UNIT_SCROLL\n";
+                scrolled += VSTEP * e.getUnitsToScroll();
+            } else { //scroll type == MouseWheelEvent.WHEEL_BLOCK_SCROLL
+                message += "Scroll type: WHEEL_BLOCK_SCROLL\n";
+            }
+            scrolled = Math.max(0, scrolled);
+            System.out.println(message + scrolled);
+        });
+    }
+
+    public void updateResize() {
+        System.out.println("updating due to resize");
+        this.width = Browser.WIDTH - 100; // frame boundaries + extra crap
+        this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
+        this.displayList = this.LayoutWebPage(this.text);
     }
 
     @Override
@@ -45,12 +70,16 @@ public class BrowserTab extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        System.out.println("rerendering tab " + url);
+//        System.out.println("rerendering tab " + url);
         super.paintComponent(g);
         for (Triplet<Integer, Integer, String> renderchunk : displayList) {
-            g.drawString(renderchunk.getThird(), renderchunk.getFirst(), renderchunk.getSecond());
+            if (renderchunk.getSecond() > scrolled + height) continue;
+            if (renderchunk.getSecond() + VSTEP < scrolled) continue;
+            g.drawString(renderchunk.getThird(), renderchunk.getFirst(), renderchunk.getSecond() - scrolled);
         }
     }
+
+
 
     public void LoadWebPage() {
         String body;
@@ -73,15 +102,20 @@ public class BrowserTab extends JPanel {
         Integer cursorY = VSTEP;
         for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
             char ch = (char) text.codePointAt(i);
-            displayList.add(new Triplet<>(cursorX, cursorY, ((Character) ch).toString()));
-            cursorX += HSTEP;
-            if (cursorX >= this.width - HSTEP) {
-                cursorY += VSTEP;
+            if (ch == '\n') {
                 cursorX = HSTEP;
+                cursorY += VSTEP * 2;
+            }
+            else {
+                displayList.add(new Triplet<>(cursorX, cursorY, ((Character) ch).toString()));
+                cursorX += HSTEP;
+                if (cursorX >= this.width - HSTEP) {
+                    cursorY += VSTEP;
+                    cursorX = HSTEP;
+                }
             }
         }
 
         return displayList;
     }
-
 }

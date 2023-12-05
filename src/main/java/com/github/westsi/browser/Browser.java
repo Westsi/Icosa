@@ -4,10 +4,7 @@ import com.github.westsi.browser.util.Triplet;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
+import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
@@ -19,10 +16,12 @@ public class Browser {
 
     private JTabbedPane tabbedPane;
 
-    private final Integer WIDTH = 720;
-    private final Integer HEIGHT = 480;
+    public static Integer WIDTH = 720;
+    public static Integer HEIGHT = 480;
 
-    private final Integer refreshRate = 1;
+    private final Integer refreshRate = 30;
+
+    private ArrayList<BrowserTab> browserTabs = new ArrayList<>();
 
     private Browser() {
         this.frame = new JFrame("Xonize Icosa");
@@ -32,7 +31,7 @@ public class Browser {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        frame.setResizable(true); // TODO: make WIDTH and HEIGHT work with this
+        frame.setResizable(true);
         frame.setLocationByPlatform(true);
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Menu");
@@ -45,9 +44,21 @@ public class Browser {
         frame.setSize(WIDTH, HEIGHT);
         frame.setVisible(true);
 
+        frame.addComponentListener(new ComponentAdapter()
+        {
+            public void componentResized(ComponentEvent evt) {
+                Component c = (Component)evt.getSource();
+                WIDTH = c.getWidth();
+                HEIGHT = c.getHeight();
+                for (BrowserTab bt: browserTabs) {
+                    bt.updateResize();
+                }
+            }
+        });
+
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                System.out.println("rerendering global window");
+//                System.out.println("rerendering global window");
                 frame.repaint();
             }
         };
@@ -64,7 +75,10 @@ public class Browser {
 
     public void LoadWebPage(String url) {
         BrowserTab bt = new BrowserTab(url, refreshRate, WIDTH, HEIGHT);
-        tabbedPane.add(bt.getName(), bt);
+        browserTabs.add(bt);
+        JScrollPane jsp = new JScrollPane(bt);
+        jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work
+        tabbedPane.add(bt.getName(), jsp);
         bt.LoadWebPage();
     }
 }
