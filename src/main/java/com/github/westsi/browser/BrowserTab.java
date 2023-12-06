@@ -1,29 +1,32 @@
 package com.github.westsi.browser;
 
+import com.github.westsi.browser.util.Pair;
+import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.Triplet;
+import com.github.westsi.browser.util.html.HTMLElement;
+import com.github.westsi.browser.util.html.HTMLTag;
+import com.github.westsi.browser.util.html.HTMLText;
 
 import javax.swing.*;
+import javax.swing.text.html.HTML;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import static com.github.westsi.browser.util.HTMLParser.lex;
-import static java.awt.BorderLayout.EAST;
+import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
 public class BrowserTab extends JPanel {
-    boolean thing = false;
-
-    private final Integer HSTEP = 13;
-    private final Integer VSTEP = 18;
+    private Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
+    private Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight();
     private Integer refreshRate;
 
     private Integer scrolled = 0;
 
     private URL url;
 
-    private ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
-    private String text = "Loading...";
+    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
+    private ArrayList<HTMLElement> tokens = new ArrayList<>();
 
     private Integer width;
     private Integer height;
@@ -58,9 +61,14 @@ public class BrowserTab extends JPanel {
 
     public void updateResize() {
         System.out.println("updating due to resize");
-        this.width = Browser.WIDTH - 100; // frame boundaries + extra crap
+        this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
-        this.displayList = this.LayoutWebPage(this.text);
+        this.LayoutWebPage();
+    }
+
+    @Override
+    public Graphics getGraphics() {
+        return super.getGraphics();
     }
 
     @Override
@@ -72,10 +80,11 @@ public class BrowserTab extends JPanel {
     protected void paintComponent(Graphics g) {
 //        System.out.println("rerendering tab " + url);
         super.paintComponent(g);
-        for (Triplet<Integer, Integer, String> renderchunk : displayList) {
-            if (renderchunk.getSecond() > scrolled + height) continue;
-            if (renderchunk.getSecond() + VSTEP < scrolled) continue;
-            g.drawString(renderchunk.getThird(), renderchunk.getFirst(), renderchunk.getSecond() - scrolled);
+        for (Pair<Point, StyledString> renderchunk : displayList) {
+            if (renderchunk.getFirst().y > scrolled + height) continue;
+            if (renderchunk.getFirst().y + VSTEP < scrolled) continue;
+            g.setFont(renderchunk.getSecond().font);
+            g.drawString(renderchunk.getSecond().string, renderchunk.getFirst().x, renderchunk.getFirst().y - scrolled);
         }
     }
 
@@ -92,30 +101,78 @@ public class BrowserTab extends JPanel {
         } catch (Exception e) {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
         }
-        this.text = lex(body);
-        this.displayList = this.LayoutWebPage(text);
+        this.tokens = lex(body);
+        for (HTMLElement e : tokens) {
+            System.out.println(e);
+        }
+        this.LayoutWebPage();
     }
 
-    public ArrayList<Triplet<Integer, Integer, String>> LayoutWebPage(String text) {
-        ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
-        Integer cursorX = HSTEP;
-        Integer cursorY = VSTEP;
-        for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
-            char ch = (char) text.codePointAt(i);
-            if (ch == '\n') {
-                cursorX = HSTEP;
-                cursorY += VSTEP * 2;
-            }
-            else {
-                displayList.add(new Triplet<>(cursorX, cursorY, ((Character) ch).toString()));
-                cursorX += HSTEP;
-                if (cursorX >= this.width - HSTEP) {
-                    cursorY += VSTEP;
-                    cursorX = HSTEP;
+//    public ArrayList<Triplet<Integer, Integer, String>> OldLayoutWebPage() {
+//        ArrayList<Triplet<Integer, Integer, String>> displayList = new ArrayList<>();
+//        Integer cursorY = VSTEP*3;
+//        StringBuilder tempStr = new StringBuilder();
+//        for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
+//            char ch = (char) text.codePointAt(i);
+//            if (ch == '\n') {
+//                displayList.add(new Triplet<>(HSTEP, cursorY, tempStr.toString()));
+//                tempStr.setLength(0);
+//                cursorY += VSTEP * 2;
+//            }
+//            else {
+//                tempStr.append(ch);
+//                Integer width = new Canvas().getFontMetrics(Browser.font).stringWidth(tempStr.toString());
+//
+//                if (width >= this.width - HSTEP) {
+//                    displayList.add(new Triplet<>(HSTEP, cursorY, tempStr.toString()));
+//                    tempStr.setLength(0);
+//                    cursorY += (int) Math.round(VSTEP * 1.25);
+//                }
+//            }
+//        }
+//        displayList.add(new Triplet<>(HSTEP, cursorY, tempStr.toString()));
+//
+//        return displayList;
+//    }
+
+    public void LayoutWebPage() {
+        ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
+        Font curFont = Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
+        Integer cursorY = VSTEP*3;
+        StringBuilder tempStr = new StringBuilder();
+        for (HTMLElement el : this.tokens) {
+            if (el instanceof HTMLText) {
+                HTMLText htmlText = (HTMLText) el;
+                String text = htmlText.getText();
+                for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
+                    char ch = (char) text.codePointAt(i);
+                    if (ch == '\n') {
+                        displayList.add(new Pair<>(new Point(HSTEP, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        tempStr.setLength(0);
+                        cursorY += VSTEP * 2;
+                    }
+                    else {
+                        tempStr.append(ch);
+                        Integer width = new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString());
+
+                        if (width >= this.width - HSTEP) {
+                            displayList.add(new Pair<>(new Point(HSTEP, cursorY), new StyledString(tempStr.toString(), curFont)));
+                            tempStr.setLength(0);
+                            cursorY += (int) Math.round(VSTEP * 1.25);
+                        }
+                    }
                 }
+            } else {
+                HTMLTag tag = (HTMLTag) el;
+                curFont = switch (tag.getTag()) {
+                    case "b" -> Browser.fonts.get(Font.BOLD).deriveFont(12.0f);
+                    case "i" -> Browser.fonts.get(Font.ITALIC).deriveFont(12.0f);
+                    case "/b", "/i" -> Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
+                    default -> curFont;
+                };
+
             }
         }
-
-        return displayList;
+        this.displayList = displayList;
     }
 }

@@ -5,8 +5,10 @@ import com.github.westsi.browser.util.Triplet;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.awt.BorderLayout.EAST;
 
@@ -20,6 +22,23 @@ public class Browser {
     public static Integer HEIGHT = 480;
 
     private final Integer refreshRate = 30;
+
+
+    public static HashMap<Integer, Font> fonts = new HashMap<>();
+
+    static {
+        try {
+            fonts.put(Font.PLAIN, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial.ttf")));
+            fonts.put(Font.ITALIC, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial_Italic.ttf")));
+            fonts.put(Font.BOLD, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial_Italic.ttf")));
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+            fonts.put(Font.PLAIN, new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+            fonts.put(Font.ITALIC, new Font(Font.SANS_SERIF, Font.ITALIC, 12));
+            fonts.put(Font.BOLD, new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        }
+    }
+
 
     private ArrayList<BrowserTab> browserTabs = new ArrayList<>();
 
@@ -43,6 +62,7 @@ public class Browser {
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png")));
         frame.setSize(WIDTH, HEIGHT);
         frame.setVisible(true);
+        frame.setFont(fonts.get(Font.PLAIN));
 
         frame.addComponentListener(new ComponentAdapter()
         {

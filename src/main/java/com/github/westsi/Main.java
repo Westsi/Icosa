@@ -15,7 +15,7 @@ public class Main {
 //        String url = userInput.nextLine();
         Browser browser = Browser.getInstance();
 //        browser.LoadWebPage(url);
-        browser.LoadWebPage("https://browser.engineering/examples/xiyouji.html");
+//        browser.LoadWebPage("https://browser.engineering/examples/xiyouji.html");
         browser.LoadWebPage("https://emojipedia.org/");
         browser.LoadWebPage("https://hweeo");
     }
