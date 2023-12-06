@@ -4,7 +4,7 @@ import javax.swing.text.html.HTML;
 import java.util.HashMap;
 
 public class HTMLTag implements HTMLElement{
-    private String tag;
+    private final String tag;
 
     private HashMap<HTML.Attribute, String> attributes = new HashMap<>();
 

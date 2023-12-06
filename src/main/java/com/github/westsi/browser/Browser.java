@@ -96,7 +96,7 @@ public class Browser {
     }
 
     public void LoadWebPage(String url) {
-        BrowserTab bt = new BrowserTab(url, refreshRate, WIDTH, HEIGHT);
+        BrowserTab bt = new BrowserTab(url, WIDTH, HEIGHT);
         browserTabs.add(bt);
         JScrollPane jsp = new JScrollPane(bt);
         jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work

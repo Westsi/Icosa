@@ -5,7 +5,7 @@ public class HTMLText implements HTMLElement {
         return text;
     }
 
-    private String text;
+    private final String text;
 
     public HTMLText(String text) {
         this.text = text;

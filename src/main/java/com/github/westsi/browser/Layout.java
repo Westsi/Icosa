@@ -44,12 +44,11 @@ public class Layout {
                 String text = htmlText.getText();
                 for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
                     char ch = (char) text.codePointAt(i);
-                    if (ch == '\n') {
-                    } else {
+                    if (ch != '\n') {
                         buf.append(ch);
-                        Integer width = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString());
+                        int swidth = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString());
 
-                        if (width >= this.width - HSTEP) {
+                        if (swidth >= this.width - HSTEP) {
                             displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                             buf.setLength(0);
                             prevWidth = HSTEP;
@@ -94,7 +93,7 @@ public class Layout {
                         prevWidth = HSTEP;
                         cursorY += VSTEP * 2;
                         break;
-                };
+                }
             }
         }
         System.out.println(displayList);

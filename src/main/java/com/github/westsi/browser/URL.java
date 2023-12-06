@@ -11,7 +11,7 @@ import java.time.Duration;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class URL {
-    private String url;
+    private final String url;
     public URL(String url) {
         this.url = url;
     }

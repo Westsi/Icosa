@@ -19,21 +19,19 @@ import static com.github.westsi.browser.util.html.HTMLParser.lex;
 public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
     public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight();
-    private Integer refreshRate;
 
     private Integer scrolled = 0;
 
-    private URL url;
+    private final URL url;
 
 //    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
-    private Layout layout;
+    private final Layout layout;
     private ArrayList<HTMLElement> tokens = new ArrayList<>();
 
     private Integer width;
     private Integer height;
 
-    public BrowserTab(String url, Integer refreshRate, Integer width, Integer height) {
-        this.refreshRate = refreshRate;
+    public BrowserTab(String url, Integer width, Integer height) {
         this.url = new URL(url);
         this.height = height;
         this.width = width;
