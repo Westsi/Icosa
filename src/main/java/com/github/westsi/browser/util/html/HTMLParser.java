@@ -22,7 +22,7 @@ public class HTMLParser {
                 buffer.append(ch);
             }
         }
-        if (!inTag && !buffer.isEmpty()) out.add(new HTMLText(buffer.toString()));
+        if (!inTag && !buffer.isEmpty() && !buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
         return out;
     }
 }

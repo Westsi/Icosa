@@ -16,7 +16,7 @@ public class Main {
         Browser browser = Browser.getInstance();
 //        browser.LoadWebPage(url);
 //        browser.LoadWebPage("https://browser.engineering/examples/xiyouji.html");
-        browser.LoadWebPage("https://gist.githubusercontent.com/Westsi/58b5aeeb2c53e6682bed13eacdb7be8c/raw/734282d245299b0e398146b26f3e84acec10988a/test.html");
+        browser.LoadWebPage("https://gist.githubusercontent.com/Westsi/58b5aeeb2c53e6682bed13eacdb7be8c/raw/cf0317ce8036d3cbc6dd1acd4bf8c671814c81f8/test.html");
 //        browser.LoadWebPage("https://hweeo");
     }
 }

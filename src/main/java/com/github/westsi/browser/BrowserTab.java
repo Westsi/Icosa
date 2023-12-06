@@ -138,10 +138,11 @@ public class BrowserTab extends JPanel {
 
     public void LayoutWebPage() {
         ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
-        Font curFont = Browser.fonts.get(Font.PLAIN).deriveFont(Font.PLAIN, 12.0f);
+//        Font curFont = Browser.fonts.get(Font.PLAIN).deriveFont(Font.PLAIN, 12.0f);
         Integer cursorY = VSTEP * 5;
         Integer prevWidth = HSTEP;
         StringBuilder tempStr = new StringBuilder();
+        int fontFlag = Font.PLAIN;
         for (HTMLElement el : this.tokens) {
             if (el instanceof HTMLText) {
                 HTMLText htmlText = (HTMLText) el;
@@ -151,10 +152,10 @@ public class BrowserTab extends JPanel {
                     if (ch == '\n') {
                     } else {
                         tempStr.append(ch);
-                        Integer width = new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString());
+                        Integer width = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(tempStr.toString());
 
                         if (width >= this.width - HSTEP) {
-                            displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                            displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                             tempStr.setLength(0);
                             prevWidth = HSTEP;
                             cursorY += (int) Math.round(VSTEP * 1.25);
@@ -165,28 +166,35 @@ public class BrowserTab extends JPanel {
                 HTMLTag tag = (HTMLTag) el;
                 switch (tag.getTag()) {
                     case "b":
-                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(tempStr.toString()));
                         System.out.println("b tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                         tempStr.setLength(0);
-                        curFont = Browser.fonts.get(Font.BOLD).deriveFont(Font.BOLD, 12.0f);
+                        fontFlag |= Font.BOLD;
                         break;
                     case "i":
-                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(tempStr.toString()));
                         System.out.println("i tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                         tempStr.setLength(0);
-                        curFont = Browser.fonts.get(Font.ITALIC).deriveFont(Font.ITALIC, 12.0f);
+                        fontFlag |= Font.ITALIC;
                         break;
-                    case "/b", "/i":
-                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                    case "/b":
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(tempStr.toString()));
                         System.out.println("leaving tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                         tempStr.setLength(0);
-                        curFont = Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
+                        fontFlag = fontFlag & ~Font.BOLD;
+                        break;
+                    case "/i":
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(tempStr.toString()));
+                        System.out.println("leaving tag" + prevWidth);
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        tempStr.setLength(0);
+                        fontFlag = fontFlag & ~Font.ITALIC;
                         break;
                     case "br":
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
                         tempStr.setLength(0);
                         prevWidth = HSTEP;
                         cursorY += VSTEP * 2;

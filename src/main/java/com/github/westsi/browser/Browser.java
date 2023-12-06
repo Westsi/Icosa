@@ -31,11 +31,13 @@ public class Browser {
             fonts.put(Font.PLAIN, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial.ttf")).deriveFont(Font.PLAIN));
             fonts.put(Font.ITALIC, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial_Italic.ttf")).deriveFont(Font.ITALIC));
             fonts.put(Font.BOLD, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial_Bold.ttf")).deriveFont(Font.BOLD));
+            fonts.put(Font.BOLD | Font.ITALIC, Font.createFont(Font.TRUETYPE_FONT, Browser.class.getResourceAsStream("/Arial_Bold_Italic.ttf")).deriveFont(Font.BOLD | Font.ITALIC));
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
             fonts.put(Font.PLAIN, new Font(Font.SANS_SERIF, Font.PLAIN, 12).deriveFont(Font.PLAIN));
             fonts.put(Font.ITALIC, new Font(Font.SANS_SERIF, Font.ITALIC, 12).deriveFont(Font.ITALIC));
             fonts.put(Font.BOLD, new Font(Font.SANS_SERIF, Font.BOLD, 12).deriveFont(Font.BOLD));
+            fonts.put(Font.BOLD | Font.ITALIC, new Font(Font.SANS_SERIF, Font.BOLD, 12).deriveFont(Font.BOLD | Font.ITALIC));
         }
     }
 
