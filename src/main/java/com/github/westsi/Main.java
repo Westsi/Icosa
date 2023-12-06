@@ -16,7 +16,7 @@ public class Main {
         Browser browser = Browser.getInstance();
 //        browser.LoadWebPage(url);
 //        browser.LoadWebPage("https://browser.engineering/examples/xiyouji.html");
-        browser.LoadWebPage("https://emojipedia.org/");
-        browser.LoadWebPage("https://hweeo");
+        browser.LoadWebPage("https://gist.githubusercontent.com/Westsi/58b5aeeb2c53e6682bed13eacdb7be8c/raw/b621991ac4036d7b794bb37ac8fc939eac5d94a8/test.html");
+//        browser.LoadWebPage("https://hweeo");
     }
 }

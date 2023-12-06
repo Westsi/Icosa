@@ -84,6 +84,7 @@ public class BrowserTab extends JPanel {
             if (renderchunk.getFirst().y > scrolled + height) continue;
             if (renderchunk.getFirst().y + VSTEP < scrolled) continue;
             g.setFont(renderchunk.getSecond().font);
+            this.setFont(renderchunk.getSecond().font);
             g.drawString(renderchunk.getSecond().string, renderchunk.getFirst().x, renderchunk.getFirst().y - scrolled);
         }
     }
@@ -137,8 +138,9 @@ public class BrowserTab extends JPanel {
 
     public void LayoutWebPage() {
         ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
-        Font curFont = Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
-        Integer cursorY = VSTEP*3;
+        Font curFont = Browser.fonts.get(Font.PLAIN).deriveFont(Font.PLAIN, 12.0f);
+        Integer cursorY = VSTEP * 5;
+        Integer prevWidth = HSTEP;
         StringBuilder tempStr = new StringBuilder();
         for (HTMLElement el : this.tokens) {
             if (el instanceof HTMLText) {
@@ -147,32 +149,49 @@ public class BrowserTab extends JPanel {
                 for (int i=0,n=text.length(); i<n; i+= Character.charCount(text.codePointAt(i))) {
                     char ch = (char) text.codePointAt(i);
                     if (ch == '\n') {
-                        displayList.add(new Pair<>(new Point(HSTEP, cursorY), new StyledString(tempStr.toString(), curFont)));
-                        tempStr.setLength(0);
-                        cursorY += VSTEP * 2;
-                    }
-                    else {
+                    } else {
                         tempStr.append(ch);
                         Integer width = new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString());
 
                         if (width >= this.width - HSTEP) {
-                            displayList.add(new Pair<>(new Point(HSTEP, cursorY), new StyledString(tempStr.toString(), curFont)));
+                            displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
                             tempStr.setLength(0);
+                            prevWidth = HSTEP;
                             cursorY += (int) Math.round(VSTEP * 1.25);
                         }
                     }
                 }
             } else {
                 HTMLTag tag = (HTMLTag) el;
-                curFont = switch (tag.getTag()) {
-                    case "b" -> Browser.fonts.get(Font.BOLD).deriveFont(12.0f);
-                    case "i" -> Browser.fonts.get(Font.ITALIC).deriveFont(12.0f);
-                    case "/b", "/i" -> Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
-                    default -> curFont;
+                switch (tag.getTag()) {
+                    case "b":
+                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        tempStr.setLength(0);
+                        curFont = Browser.fonts.get(Font.BOLD).deriveFont(Font.BOLD, 12.0f);
+                        break;
+                    case "i":
+                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        tempStr.setLength(0);
+                        curFont = Browser.fonts.get(Font.ITALIC).deriveFont(Font.ITALIC, 12.0f);
+                        break;
+                    case "/b", "/i":
+                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        tempStr.setLength(0);
+                        curFont = Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
+                        break;
+                    case "br":
+                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
+                        tempStr.setLength(0);
+                        prevWidth = HSTEP;
+                        cursorY += VSTEP * 2;
+                        break;
                 };
-
             }
         }
+        System.out.println(displayList);
         this.displayList = displayList;
     }
 }

@@ -11,4 +11,12 @@ public class StyledString {
         this.font = font;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("StyledString{");
+        sb.append("string='").append(string).append('\'');
+        sb.append(", font=").append(font);
+        sb.append('}');
+        return sb.toString();
+    }
 }
