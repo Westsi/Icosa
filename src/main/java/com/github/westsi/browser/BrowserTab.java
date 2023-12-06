@@ -165,19 +165,22 @@ public class BrowserTab extends JPanel {
                 HTMLTag tag = (HTMLTag) el;
                 switch (tag.getTag()) {
                     case "b":
-                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        System.out.println("b tag" + prevWidth);
                         displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
                         tempStr.setLength(0);
                         curFont = Browser.fonts.get(Font.BOLD).deriveFont(Font.BOLD, 12.0f);
                         break;
                     case "i":
-                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        System.out.println("i tag" + prevWidth);
                         displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
                         tempStr.setLength(0);
                         curFont = Browser.fonts.get(Font.ITALIC).deriveFont(Font.ITALIC, 12.0f);
                         break;
                     case "/b", "/i":
-                        prevWidth = HSTEP + (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        prevWidth += (new Canvas().getFontMetrics(curFont).stringWidth(tempStr.toString()));
+                        System.out.println("leaving tag" + prevWidth);
                         displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(tempStr.toString(), curFont)));
                         tempStr.setLength(0);
                         curFont = Browser.fonts.get(Font.PLAIN).deriveFont(12.0f);
