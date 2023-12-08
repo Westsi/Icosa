@@ -1,4 +1,4 @@
 # Icosa Browser
 ### Made by Xonize with ❤️
 
-[![GitHub Super-Linter](https://github.com/Westsi/<Icosa/actions/workflows/linter.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
+[![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://westsi.github.io/Icosa/javadoc/)
