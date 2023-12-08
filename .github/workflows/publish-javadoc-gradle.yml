@@ -9,6 +9,10 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
     steps:
       - name: Deploy JavaDoc 🚀
         uses: MathieuSoysal/Javadoc-publisher.yml@v2.4.0
