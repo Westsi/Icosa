@@ -2,13 +2,9 @@ package com.github.westsi.browser;
 
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
-import com.github.westsi.browser.util.Triplet;
 import com.github.westsi.browser.util.html.HTMLElement;
-import com.github.westsi.browser.util.html.HTMLTag;
-import com.github.westsi.browser.util.html.HTMLText;
 
 import javax.swing.*;
-import javax.swing.text.html.HTML;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
@@ -61,8 +57,10 @@ public class BrowserTab extends JPanel {
 
     public void updateResize() {
         System.out.println("updating due to resize");
+//        System.out.println(this.tokens);
         this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
+        this.layout.updateResize(this.width, this.height);
         this.layout.LayoutWebPage(this.tokens);
     }
 
@@ -82,7 +80,7 @@ public class BrowserTab extends JPanel {
         super.paintComponent(g);
         for (Pair<Point, StyledString> renderchunk : this.layout.getDisplayList()) {
             if (renderchunk.getFirst().y > scrolled + height) continue;
-            if (renderchunk.getFirst().y + VSTEP < scrolled) continue;
+            if (renderchunk.getFirst().y < scrolled) continue;
             g.setFont(renderchunk.getSecond().font);
             this.setFont(renderchunk.getSecond().font);
             g.drawString(renderchunk.getSecond().string, renderchunk.getFirst().x, renderchunk.getFirst().y - scrolled);
@@ -92,6 +90,7 @@ public class BrowserTab extends JPanel {
 
 
     public void LoadWebPage() {
+        System.out.println("loading " + url);
         String body;
         try {
             body = this.url.Request();
@@ -103,9 +102,9 @@ public class BrowserTab extends JPanel {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
         }
         this.tokens = lex(body);
-        for (HTMLElement e : tokens) {
-            System.out.println(e);
-        }
+//        for (HTMLElement e : tokens) {
+//            System.out.println(e);
+//        }
         this.layout.LayoutWebPage(this.tokens);
     }
 }

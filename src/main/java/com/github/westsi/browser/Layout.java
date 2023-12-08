@@ -13,20 +13,18 @@ import static com.github.westsi.browser.BrowserTab.HSTEP;
 import static com.github.westsi.browser.BrowserTab.VSTEP;
 
 public class Layout {
-    private Integer cursorY = VSTEP * 5;
     private Integer prevWidth = HSTEP;
-    private StringBuilder buf = new StringBuilder();
-    private Float defaultFontSize;
+    private final StringBuilder buf = new StringBuilder();
+    private final Float defaultFontSize;
     private Float fontSize;
-    private int fontFlag = Font.PLAIN;
     private Integer width;
     private Integer height;
+
+    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
 
     public ArrayList<Pair<Point, StyledString>> getDisplayList() {
         return displayList;
     }
-
-    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
 
     public Layout(Float defaultFontSize, Integer width, Integer height) {
         this.defaultFontSize = defaultFontSize;
@@ -36,7 +34,9 @@ public class Layout {
     }
 
     public void LayoutWebPage(ArrayList<HTMLElement> tokens) {
-        ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
+        ReInitVariables();
+        Integer cursorY = VSTEP * 5;
+        ArrayList<Pair<Point, StyledString>> dl = new ArrayList<>();
         int fontFlag = Font.PLAIN;
         for (HTMLElement el : tokens) {
             if (el instanceof HTMLText) {
@@ -46,10 +46,10 @@ public class Layout {
                     char ch = (char) text.codePointAt(i);
                     if (ch != '\n') {
                         buf.append(ch);
-                        int swidth = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString());
+                        int swidth = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString());
 
                         if (swidth >= this.width - HSTEP) {
-                            displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                            dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                             buf.setLength(0);
                             prevWidth = HSTEP;
                             cursorY += (int) Math.round(VSTEP * 1.25);
@@ -60,35 +60,35 @@ public class Layout {
                 HTMLTag tag = (HTMLTag) el;
                 switch (tag.getTag()) {
                     case "b":
-                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString()));
-                        System.out.println("b tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString()));
+//                        System.out.println("b tag" + prevWidth);
+                        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                         buf.setLength(0);
                         fontFlag |= Font.BOLD;
                         break;
                     case "i":
-                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString()));
-                        System.out.println("i tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString()));
+//                        System.out.println("i tag" + prevWidth);
+                        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                         buf.setLength(0);
                         fontFlag |= Font.ITALIC;
                         break;
                     case "/b":
-                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString()));
-                        System.out.println("leaving tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString()));
+//                        System.out.println("leaving tag" + prevWidth);
+                        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                         buf.setLength(0);
                         fontFlag = fontFlag & ~Font.BOLD;
                         break;
                     case "/i":
-                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f)).stringWidth(buf.toString()));
-                        System.out.println("leaving tag" + prevWidth);
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        prevWidth += (new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString()));
+//                        System.out.println("leaving tag" + prevWidth);
+                        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                         buf.setLength(0);
                         fontFlag = fontFlag & ~Font.ITALIC;
                         break;
                     case "br":
-                        displayList.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, 12.0f))));
+                        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                         buf.setLength(0);
                         prevWidth = HSTEP;
                         cursorY += VSTEP * 2;
@@ -96,7 +96,18 @@ public class Layout {
                 }
             }
         }
-        System.out.println(displayList);
-        this.displayList = displayList;
+        dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
+//        System.out.println(dl);
+        this.displayList = dl;
+    }
+
+    private void ReInitVariables() {
+        this.fontSize = defaultFontSize;
+        this.buf.setLength(0);
+    }
+
+    public void updateResize(Integer width, Integer height) {
+        this.width = width;
+        this.height = height;
     }
 }
