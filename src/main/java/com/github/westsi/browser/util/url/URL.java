@@ -14,6 +14,11 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class URL {
     private final String url;
+
+    public URLType getUrlType() {
+        return urlType;
+    }
+
     private final URLType urlType;
     public URL(String url) {
         this.url = url;
@@ -48,10 +53,6 @@ public class URL {
      * At the moment, assumes that the data URL will always be text/html
      */
     public String GetDataUrlContents() {
-        // TODO: implement
-        // Form of data:MIMETYPE,CONTENTS
-        // First colon to first comma is MIMETYPE
-        // Everything after first comma is CONTENTS
         String contents;
         try {
             contents = this.url.split(",", 2)[1];

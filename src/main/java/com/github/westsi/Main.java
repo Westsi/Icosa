@@ -19,6 +19,6 @@ public class Main {
 //        browser.LoadWebPage("https://browser.engineering/examples/example3-sizes.html");
 //        browser.LoadWebPage("https://browser.engineering/text.html");
 //        browser.LoadWebPage("https://hweeo");
-        browser.LoadWebPage("data:text/html,<b>Hi</b>");
+        browser.LoadWebPage("data:text/html,<b>Hi&lt;&gt;</b>");
     }
 }

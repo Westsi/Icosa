@@ -5,7 +5,11 @@ public class HTMLText implements HTMLElement {
         return text;
     }
 
-    private final String text;
+    protected void setText(String text) {
+        this.text = text;
+    }
+
+    private String text;
 
     public HTMLText(String text) {
         this.text = text;
