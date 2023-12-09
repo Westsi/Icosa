@@ -3,6 +3,7 @@ package com.github.westsi.browser;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
+import com.github.westsi.browser.util.url.URL;
 
 import javax.swing.*;
 import java.awt.*;
