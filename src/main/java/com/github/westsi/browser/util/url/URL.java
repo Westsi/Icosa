@@ -45,7 +45,7 @@ public class URL {
     }
 
     /**
-     * @implNote At the moment, assumes that the data URL will always be text/html
+     * At the moment, assumes that the data URL will always be text/html
      */
     public String GetDataUrlContents() {
         // TODO: implement

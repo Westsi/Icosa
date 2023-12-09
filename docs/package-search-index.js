@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.github.westsi"},{"l":"com.github.westsi.browser"},{"l":"com.github.westsi.browser.util"},{"l":"com.github.westsi.browser.util.html"},{"l":"com.github.westsi.vsi"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.github.westsi"},{"l":"com.github.westsi.browser"},{"l":"com.github.westsi.browser.util"},{"l":"com.github.westsi.browser.util.html"},{"l":"com.github.westsi.browser.util.url"},{"l":"com.github.westsi.vsi"}];updateSearchResults();
