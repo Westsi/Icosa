@@ -12,7 +12,7 @@ public class HTMLParser {
 
             if (ch == '<') {
                 inTag = true;
-                if (!buffer.isEmpty() && !buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
+                if (!buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
                 buffer.setLength(0);
             } else if (ch == '>') {
                 inTag = false;
@@ -22,7 +22,7 @@ public class HTMLParser {
                 buffer.append(ch);
             }
         }
-        if (!inTag && !buffer.isEmpty() && !buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
+        if (!inTag && !buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
         return out;
     }
 }
