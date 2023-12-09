@@ -8,6 +8,7 @@ import com.github.westsi.browser.util.html.HTMLText;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 import static com.github.westsi.browser.BrowserTab.HSTEP;
@@ -36,7 +37,7 @@ public class Layout {
 
     public void LayoutWebPage(ArrayList<HTMLElement> tokens) {
         ReInitVariables();
-        Integer cursorY = VSTEP * 5;
+        Integer cursorY = VSTEP;
         ArrayList<Pair<Point, StyledString>> dl = new ArrayList<>();
         int fontFlag = Font.PLAIN;
         for (HTMLElement el : tokens) {
@@ -47,13 +48,14 @@ public class Layout {
                     char ch = (char) text.codePointAt(i);
                     if (ch != '\n') {
                         buf.append(ch);
-                        int swidth = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString());
+                        int swidth = new Canvas().getFontMetrics(Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize)).stringWidth(buf.toString()) + prevWidth;
 
-                        if (swidth >= this.width - HSTEP) {
+                        if (swidth >= this.width - HSTEP * 2) {
                             dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
                             buf.setLength(0);
                             prevWidth = HSTEP;
                             cursorY += (int) Math.round(VSTEP * 1.25);
+
                         }
                     }
                 }
@@ -103,7 +105,7 @@ public class Layout {
             }
         }
         if (!buf.toString().isEmpty()) dl.add(new Pair<>(new Point(prevWidth, cursorY), new StyledString(buf.toString(), Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize))));
-        System.out.println(dl);
+//        System.out.println(dl);
         this.displayList = dl;
     }
 

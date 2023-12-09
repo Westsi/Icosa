@@ -70,10 +70,12 @@ public class Browser {
         {
             public void componentResized(ComponentEvent evt) {
                 Component c = (Component)evt.getSource();
-                WIDTH = c.getWidth();
-                HEIGHT = c.getHeight();
-                for (BrowserTab bt: browserTabs) {
-                    bt.updateResize();
+                if (Math.abs(c.getWidth()-WIDTH) > 100 || Math.abs(c.getHeight()-HEIGHT) > 100) {
+                    WIDTH = c.getWidth();
+                    HEIGHT = c.getHeight();
+                    for (BrowserTab bt: browserTabs) {
+                        bt.updateResize();
+                    }
                 }
             }
         });

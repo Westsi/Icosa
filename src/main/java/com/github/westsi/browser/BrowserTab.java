@@ -14,7 +14,7 @@ import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
 public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
-    public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight();
+    public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight() * 5;
 
     private Integer scrolled = 0;
 
@@ -29,9 +29,9 @@ public class BrowserTab extends JPanel {
 
     public BrowserTab(String url, Integer width, Integer height) {
         this.url = new URL(url);
-        this.height = height;
-        this.width = width;
-        this.layout = new Layout(12.0f, width, height);
+        this.height = height - 100;
+        this.width = width - 50;
+        this.layout = new Layout(12.0f, this.width, this.height);
         this.setFocusable(true);
 
         this.addMouseWheelListener(e -> {
