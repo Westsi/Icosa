@@ -1,5 +1,9 @@
 package com.github.westsi.browser.util.html;
 
+/**
+ * @author Westsi
+ * @version %I%
+ */
 public class HTMLText implements HTMLElement {
     public String getText() {
         return text;

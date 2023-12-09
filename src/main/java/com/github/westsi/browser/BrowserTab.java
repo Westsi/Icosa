@@ -13,6 +13,10 @@ import java.util.ArrayList;
 
 import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
+/**
+ * @author Westsi
+ * @version %I%
+ */
 public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
     public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight() * 5;

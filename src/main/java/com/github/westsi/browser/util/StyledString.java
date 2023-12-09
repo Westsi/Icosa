@@ -2,6 +2,11 @@ package com.github.westsi.browser.util;
 
 import java.awt.*;
 
+/**
+ * Utility class to group together a string and its style as a Font for rendering to a UI.
+ * @author Westsi
+ * @version %I%
+ */
 public class StyledString {
     public String string;
     public Font font;

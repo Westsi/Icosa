@@ -12,6 +12,12 @@ import java.time.Duration;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
+/**
+ * Represents a URL and its type as specified in <code>URLType</code>.
+ * @author Westsi
+ * @version %I%
+ * @see URLType
+ */
 public class URL {
     private final String url;
 
@@ -27,7 +33,7 @@ public class URL {
 
     public String Request() throws URISyntaxException, IOException, InterruptedException {
         switch (this.urlType) {
-            case File:
+            case FILE:
                 return GetFileContents();
             case DATA:
                 return GetDataUrlContents();
@@ -51,6 +57,7 @@ public class URL {
 
     /**
      * At the moment, assumes that the data URL will always be text/html
+     * @return The contents of the data url, from the "," after the mimetype onwards or an error string if not present.
      */
     public String GetDataUrlContents() {
         String contents;

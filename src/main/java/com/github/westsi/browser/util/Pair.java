@@ -1,5 +1,12 @@
 package com.github.westsi.browser.util;
 
+/**
+ * Utility class to group together two pieces of data.
+ * @author Westsi
+ * @version %I%
+ * @param <F> The type of the first piece of data in the pair
+ * @param <S> The type of the second piece of data
+ */
 public class Pair<F, S> {
     public F getFirst() {
         return first;

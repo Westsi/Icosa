@@ -12,6 +12,12 @@ import java.util.HashMap;
 
 import static java.awt.BorderLayout.EAST;
 
+/**
+ * The overall browser window.&nbsp; Responsible for handling <code>BrowserTab</code>s and the global <code>JFrame</code>.
+ * @author Westsi
+ * @version %I%
+ * @see BrowserTab
+ */
 public class Browser {
     private static Browser browser;
     private final JFrame frame;
@@ -44,6 +50,9 @@ public class Browser {
 
     private ArrayList<BrowserTab> browserTabs = new ArrayList<>();
 
+    /**
+     * Creates a <code>JFrame</code> for the browser and initialises it with required settings.
+     */
     private Browser() {
         this.frame = new JFrame("Xonize Icosa");
         this.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -97,6 +106,10 @@ public class Browser {
         return browser;
     }
 
+    /**
+     * Creates a new <code>BrowserTab</code> and a <code>JScrollPane</code> to hold it, then loads the page in the new tab.
+     * @param url The URL to load
+     */
     public void LoadWebPage(String url) {
         BrowserTab bt = new BrowserTab(url, WIDTH, HEIGHT);
         browserTabs.add(bt);

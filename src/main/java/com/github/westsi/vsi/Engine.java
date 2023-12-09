@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * @author Westsi
+ * @version %I%
+ */
 public class Engine {
 
     public static void RunEngine() {

@@ -4,6 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Lexes and parses source HTML into <code>HTMLTag</code>s and <code>HTMLText</code>.
+ * Supports HTML Entities.
+ * @author Westsi
+ * @version %I%
+ * @see HTMLText
+ * @see HTMLTag
+ */
 public class HTMLParser {
     private static final HashMap<String, String> Entities = new HashMap<>() {{
         put("&lt;", "<");
@@ -19,6 +27,12 @@ public class HTMLParser {
         put("&reg;", "®");
 
     }};
+
+    /**
+     * Lexes the HTML source to its constituent elements.
+     * @param body The HTML source text to be lexed.
+     * @return The list of all the <code>HTMLTag</code> and <code>HTMLText</code> elements that make up the document.
+     */
     public static ArrayList<HTMLElement> lex(String body) {
         ArrayList<HTMLElement> out = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();

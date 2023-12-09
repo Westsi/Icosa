@@ -14,6 +14,10 @@ import java.util.Objects;
 import static com.github.westsi.browser.BrowserTab.HSTEP;
 import static com.github.westsi.browser.BrowserTab.VSTEP;
 
+/**
+ * @author Westsi
+ * @version %I%
+ */
 public class Layout {
     private Integer prevWidth = HSTEP;
     private final StringBuilder buf = new StringBuilder();

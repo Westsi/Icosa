@@ -3,6 +3,10 @@ package com.github.westsi.browser.util.html;
 import javax.swing.text.html.HTML;
 import java.util.HashMap;
 
+/**
+ * @author Westsi
+ * @version %I%
+ */
 public class HTMLTag implements HTMLElement{
     private final String tag;
 

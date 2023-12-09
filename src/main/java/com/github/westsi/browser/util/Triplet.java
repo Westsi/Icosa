@@ -1,5 +1,13 @@
 package com.github.westsi.browser.util;
 
+/**
+ * Utility class to group together three pieces of data.
+ * @author Westsi
+ * @version %I%
+ * @param <F> The type of the first piece of data in the triplet
+ * @param <S> The type of the second piece of data
+ * @param <T> The type of the third piece of data
+ */
 public class Triplet<F, S, T> {
     public F getFirst() {
         return first;
