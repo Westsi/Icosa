@@ -25,9 +25,8 @@ public class BrowserTab extends JPanel {
 
     private Integer scrolled = 0;
     private final URL url;
-    private final Layout layout;
-    private ArrayList<HTMLElement> tokens = new ArrayList<>();
-
+    private final NewLayout layout;
+    private HTMLElement root;
     private Integer width;
     private Integer height;
 
@@ -35,7 +34,7 @@ public class BrowserTab extends JPanel {
         this.url = new URL(url);
         this.height = height - 100;
         this.width = width - 50;
-        this.layout = new Layout(12.0f, this.width, this.height);
+        this.layout = new NewLayout(12.0f, this.width, this.height);
         this.setFocusable(true);
 
         this.addMouseWheelListener(e -> {
@@ -64,7 +63,7 @@ public class BrowserTab extends JPanel {
         this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
         this.layout.updateResize(this.width, this.height);
-        this.layout.LayoutWebPage(this.tokens);
+        this.layout.layout(this.root);
     }
 
     @Override
@@ -106,11 +105,8 @@ public class BrowserTab extends JPanel {
         }
         HTMLParser parser = new HTMLParser();
         HTMLElement root = parser.parse(body);
+        this.root = root;
         parser.printTree(root, 0);
-        this.tokens = new ArrayList<>();
-//        for (HTMLElement e : tokens) {
-//            System.out.println(e);
-//        }
-        this.layout.LayoutWebPage(this.tokens);
+        this.layout.layout(this.root);
     }
 }

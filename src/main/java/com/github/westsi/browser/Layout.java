@@ -29,6 +29,7 @@ public class Layout {
 
     private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
 
+
     public ArrayList<Pair<Point, StyledString>> getDisplayList() {
         return displayList;
     }
