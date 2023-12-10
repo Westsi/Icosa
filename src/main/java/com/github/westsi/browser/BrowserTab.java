@@ -3,6 +3,7 @@ package com.github.westsi.browser;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
+import com.github.westsi.browser.util.html.HTMLParser;
 import com.github.westsi.browser.util.url.URL;
 
 import javax.swing.*;
@@ -10,8 +11,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-
-import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -105,7 +104,10 @@ public class BrowserTab extends JPanel {
         } catch (Exception e) {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
         }
-        this.tokens = lex(body);
+        HTMLParser parser = new HTMLParser();
+        HTMLElement root = parser.parse(body);
+        parser.printTree(root, 0);
+        this.tokens = new ArrayList<>();
 //        for (HTMLElement e : tokens) {
 //            System.out.println(e);
 //        }
