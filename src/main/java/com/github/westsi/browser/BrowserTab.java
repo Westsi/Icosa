@@ -1,5 +1,6 @@
 package com.github.westsi.browser;
 
+import com.github.westsi.browser.layout.Layout;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
