@@ -3,15 +3,13 @@ package com.github.westsi.browser;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
+import com.github.westsi.browser.util.html.HTMLParser;
 import com.github.westsi.browser.util.url.URL;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-
-import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -27,8 +25,7 @@ public class BrowserTab extends JPanel {
     private Integer scrolled = 0;
     private final URL url;
     private final Layout layout;
-    private ArrayList<HTMLElement> tokens = new ArrayList<>();
-
+    private HTMLElement root;
     private Integer width;
     private Integer height;
 
@@ -65,7 +62,7 @@ public class BrowserTab extends JPanel {
         this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
         this.layout.updateResize(this.width, this.height);
-        this.layout.LayoutWebPage(this.tokens);
+        this.layout.layout(this.root);
     }
 
     @Override
@@ -105,10 +102,10 @@ public class BrowserTab extends JPanel {
         } catch (Exception e) {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
         }
-        this.tokens = lex(body);
-//        for (HTMLElement e : tokens) {
-//            System.out.println(e);
-//        }
-        this.layout.LayoutWebPage(this.tokens);
+        HTMLParser parser = new HTMLParser();
+        HTMLElement root = parser.parse(body);
+        this.root = root;
+        parser.printTree(root, 0);
+        this.layout.layout(this.root);
     }
 }
