@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -25,7 +24,7 @@ public class BrowserTab extends JPanel {
 
     private Integer scrolled = 0;
     private final URL url;
-    private final NewLayout layout;
+    private final Layout layout;
     private HTMLElement root;
     private Integer width;
     private Integer height;
@@ -34,7 +33,7 @@ public class BrowserTab extends JPanel {
         this.url = new URL(url);
         this.height = height - 100;
         this.width = width - 50;
-        this.layout = new NewLayout(12.0f, this.width, this.height);
+        this.layout = new Layout(12.0f, this.width, this.height);
         this.setFocusable(true);
 
         this.addMouseWheelListener(e -> {
