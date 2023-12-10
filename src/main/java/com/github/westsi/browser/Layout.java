@@ -15,6 +15,7 @@ import static com.github.westsi.browser.BrowserTab.HSTEP;
 import static com.github.westsi.browser.BrowserTab.VSTEP;
 
 /**
+ * Lays out a web page for a <code>BrowserTab</code>.
  * @author Westsi
  * @version %I%
  */
@@ -39,6 +40,10 @@ public class Layout {
         this.height = height;
     }
 
+    /**
+     * Lays out tokens on page, with handling for some <code>HTMLTag</code>s and <code>HTMLText</code>.
+     * @param tokens The lexed <code>HTMLElement</code>s that need to be lain out.
+     */
     public void LayoutWebPage(ArrayList<HTMLElement> tokens) {
         ReInitVariables();
         Integer cursorY = VSTEP;

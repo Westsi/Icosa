@@ -14,18 +14,18 @@ import java.util.ArrayList;
 import static com.github.westsi.browser.util.html.HTMLParser.lex;
 
 /**
+ * Handles layout, rendering, and interactivity for an individual browser tab.
+ * Supports scrolling.
  * @author Westsi
  * @version %I%
+ * @see Layout
  */
 public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
     public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight() * 5;
 
     private Integer scrolled = 0;
-
     private final URL url;
-
-//    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
     private final Layout layout;
     private ArrayList<HTMLElement> tokens = new ArrayList<>();
 
@@ -62,7 +62,6 @@ public class BrowserTab extends JPanel {
 
     public void updateResize() {
         System.out.println("updating due to resize");
-//        System.out.println(this.tokens);
         this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
         this.layout.updateResize(this.width, this.height);
