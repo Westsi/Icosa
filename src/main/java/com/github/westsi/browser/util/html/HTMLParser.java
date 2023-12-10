@@ -26,7 +26,6 @@ public class HTMLParser {
         put("&euro;", "€");
         put("&copy;", "©");
         put("&reg;", "®");
-
     }};
 
     private static final ArrayList<String> SELF_CLOSING_TAGS = new ArrayList<>() {{
@@ -46,6 +45,18 @@ public class HTMLParser {
         add("wbr");
     }};
 
+    private static final ArrayList<String> HEAD_TAGS = new ArrayList<>() {{
+        add("base");
+        add("basefont");
+        add("bgsound");
+        add("noscript");
+        add("link");
+        add("meta");
+        add("title");
+        add("style");
+        add("script");
+    }};
+
     private ArrayList<HTMLElement> unfinished = new ArrayList<>();
 
     /**
@@ -61,7 +72,7 @@ public class HTMLParser {
 
             if (ch == '<') {
                 inTag = true;
-                if (!buffer.toString().trim().isEmpty()) this.addText(buffer.toString());
+                if (!buffer.toString().isBlank()) this.addText(buffer.toString());
                 buffer.setLength(0);
             } else if (ch == '>') {
                 inTag = false;
@@ -71,12 +82,13 @@ public class HTMLParser {
                 buffer.append(ch);
             }
         }
-        if (!inTag && !buffer.toString().trim().isEmpty()) this.addText(buffer.toString());
+        if (!inTag && !buffer.toString().isBlank()) this.addText(buffer.toString());
 
         return this.finish();
     }
 
     private void addText(String text) {
+        this.implicitTags(null);
         for (Map.Entry<String, String> ent : ENTITIES.entrySet()) {
             text = text.replaceAll(ent.getKey(), ent.getValue());
         }
@@ -91,6 +103,7 @@ public class HTMLParser {
         HashMap<String, String> attributes = attributedTag.getSecond();
 
         if (tag.startsWith("!")) return; // gets rid of comments and <!DOCTYPE>
+        this.implicitTags(tag);
 
         if (tag.startsWith("/")) { // closing tag - add node to parent
             if (this.unfinished.size() == 1) return;
@@ -110,6 +123,7 @@ public class HTMLParser {
     }
 
     private HTMLElement finish() {
+        if (this.unfinished.isEmpty()) this.implicitTags(null);
         while (this.unfinished.size() > 1) {
             HTMLElement node = this.unfinished.remove(this.unfinished.size() - 1);
             HTMLElement parent = this.unfinished.get(this.unfinished.size() - 1);
@@ -151,6 +165,29 @@ public class HTMLParser {
 
     private String casefold(String s) {
         return s.toUpperCase(Locale.ENGLISH).toLowerCase(Locale.ENGLISH);
+    }
+
+    private void implicitTags(String tag) {
+        // this is an absolute mess and if you have to look at this I feel sorry for you
+        // I'm 99% sure it won't end up in an infinite loop... WYSIWYG
+        ArrayList<String> htmlCheck = new ArrayList<>() {{
+            add("head");
+            add("body");
+            add("/html");
+        }};
+
+        while (true) {
+            ArrayList<String> openTags = new ArrayList<>();
+            for (HTMLElement e : this.unfinished) openTags.add(((HTMLTag) e).getTag());
+            if (openTags.equals(new ArrayList<String>()) && !Objects.equals(tag, "html")) {
+                this.addTag("html");
+            } else if ((openTags.equals(new ArrayList<String>(){{add("html");}}) && Objects.equals(openTags.get(0), "html")) && !htmlCheck.contains(tag)) {
+                if (HEAD_TAGS.contains(tag)) this.addTag("head");
+                else this.addTag("body");
+            } else if ((openTags.equals(new ArrayList<String>(){{add("html");add("head");}}) && (!HEAD_TAGS.contains(tag) && !Objects.equals(tag, "/head")))) {
+                this.addTag("/head");
+            } else break;
+        }
     }
 }
 

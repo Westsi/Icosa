@@ -79,7 +79,16 @@ public class Layout {
         Font font = Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize);
         Integer wordWidth = new Canvas().getFontMetrics(font).stringWidth(word);
         if (this.cursorX + wordWidth > this.width - HSTEP) this.flush();
-        this.displayList.add(new Pair<>(new Point(cursorX, cursorY), new StyledString(word, font)));
+        EventQueue.invokeLater(new Runnable() {
+            int cx = cursorX;
+            int cy = cursorY;
+            String w = word;
+            Font f = font;
+            @Override
+            public void run() {
+                displayList.add(new Pair<>(new Point(cx, cy), new StyledString(w, f)));
+            }
+        });
         this.cursorX += wordWidth + new Canvas().getFontMetrics(font).stringWidth(" ");
     }
 
