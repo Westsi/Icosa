@@ -5,12 +5,13 @@ import com.github.westsi.browser.util.Pair;
 import java.util.*;
 
 /**
- * Lexes and parses source HTML into <code>HTMLTag</code>s and <code>HTMLText</code>.
- * Supports HTML Entities.
+ * Lexes and parses source HTML into a tree of <code>HTMLElement</code>s.
+ * Supports HTML Entities and self-closing tags.
  * @author Westsi
  * @version %I%
  * @see HTMLText
  * @see HTMLTag
+ * @see HTMLElement
  */
 public class HTMLParser {
     private static final HashMap<String, String> ENTITIES = new HashMap<>() {{
@@ -48,45 +49,10 @@ public class HTMLParser {
     private ArrayList<HTMLElement> unfinished = new ArrayList<>();
 
     /**
-     * Lexes the HTML source to its constituent elements.
-     * @param body The HTML source text to be lexed.
-     * @return The list of all the <code>HTMLTag</code> and <code>HTMLText</code> elements that make up the document.
+     * Parses the HTML source to the DOM Tree.
+     * @param body The HTML source text to be parsed.
+     * @return The root of the DOM tree which will be a <code>HTMLElement</code>.
      */
-//    public static ArrayList<HTMLElement> lex(String body) {
-//        ArrayList<HTMLElement> out = new ArrayList<>();
-//        StringBuilder buffer = new StringBuilder();
-//        boolean inTag = false;
-//        for (int i=0, n=body.length(); i<n; i+=Character.charCount(body.codePointAt(i))) {
-//            char ch = (char)body.codePointAt(i);
-//
-//            if (ch == '<') {
-//                inTag = true;
-//                if (!buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
-//                buffer.setLength(0);
-//            } else if (ch == '>') {
-//                inTag = false;
-//                out.add(new HTMLTag(buffer.toString()));
-//                buffer.setLength(0);
-//            } else {
-//                buffer.append(ch);
-//            }
-//        }
-//        for (HTMLElement e : out) {
-//            try {
-//                String txt = ((HTMLText) e).getText();
-//                txt = txt.replaceAll("&lt;", "<").replaceAll("&gt;", ">");
-//                for (Map.Entry<String, String> ent : Entities.entrySet()) {
-//                    txt = txt.replaceAll(ent.getKey(), ent.getValue());
-//                }
-//                ((HTMLText) e).setText(txt);
-//            } catch (ClassCastException ex) {}
-//
-//
-//        }
-//        if (!inTag && !buffer.toString().trim().isEmpty()) out.add(new HTMLText(buffer.toString()));
-//        return out;
-//    }
-
     public HTMLElement parse(String body) {
         StringBuilder buffer = new StringBuilder();
         boolean inTag = false;
@@ -111,6 +77,9 @@ public class HTMLParser {
     }
 
     private void addText(String text) {
+        for (Map.Entry<String, String> ent : ENTITIES.entrySet()) {
+            text = text.replaceAll(ent.getKey(), ent.getValue());
+        }
         HTMLElement parent = this.unfinished.get(this.unfinished.size()-1);
         HTMLText node = new HTMLText(text, parent);
         parent.addChild(node);
@@ -120,17 +89,19 @@ public class HTMLParser {
         Pair<String, HashMap<String, String>> attributedTag = this.getAttributes(tag);
         tag = attributedTag.getFirst();
         HashMap<String, String> attributes = attributedTag.getSecond();
-        if (tag.startsWith("!")) return;
-        if (tag.startsWith("/")) {
+
+        if (tag.startsWith("!")) return; // gets rid of comments and <!DOCTYPE>
+
+        if (tag.startsWith("/")) { // closing tag - add node to parent
             if (this.unfinished.size() == 1) return;
             HTMLElement node = this.unfinished.remove(this.unfinished.size() - 1);
             HTMLElement parent = this.unfinished.get(this.unfinished.size() - 1);
             parent.addChild(node);
-        } else if (SELF_CLOSING_TAGS.contains(tag)) {
+        } else if (SELF_CLOSING_TAGS.contains(tag)) { // self-closing tag - add node to parent
             HTMLElement parent = this.unfinished.get(this.unfinished.size() - 1);
             HTMLElement node = new HTMLTag(tag, parent, attributes);
             parent.addChild(node);
-        } else {
+        } else { // start of tag that has a closing tag
             HTMLElement parent = null;
             if (!this.unfinished.isEmpty()) parent = this.unfinished.get(this.unfinished.size() - 1);
             HTMLElement node = new HTMLTag(tag, parent, attributes);
@@ -156,15 +127,17 @@ public class HTMLParser {
     }
 
     private Pair<String, HashMap<String, String>> getAttributes(String text) {
-        ArrayList<String> parts = new ArrayList<>(Arrays.asList(text.split(" ")));
+        ArrayList<String> parts = new ArrayList<>(Arrays.asList(text.split(" "))); // doesn't handle attributes with whitespace
+
         String tag = casefold(parts.remove(0));
         HashMap<String, String> attributes = new HashMap<>();
+
         for (String attrpair : parts) {
-            if (attrpair.contains("=")) {
+            if (attrpair.contains("=")) { // attribute is typical e.g. <input type="text">
                 String[] spl = attrpair.split("=", 2);
                 String key = casefold(spl[0]);
                 String val = spl[1];
-                // Strips of quotes of value
+                // Strips off quotes of value
                 if (val.length() > 2 && (val.startsWith("'") || val.startsWith("\""))) {
                     val = val.substring(1, val.length() - 1);
                 }
