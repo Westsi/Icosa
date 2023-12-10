@@ -1,6 +1,6 @@
 package com.github.westsi.browser;
 
-import com.github.westsi.browser.layout.Layout;
+import com.github.westsi.browser.layout.OldLayout;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
  * Supports scrolling.
  * @author Westsi
  * @version %I%
- * @see Layout
+ * @see OldLayout
  */
 public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
@@ -25,7 +25,7 @@ public class BrowserTab extends JPanel {
 
     private Integer scrolled = 0;
     private final URL url;
-    private final Layout layout;
+    private final OldLayout layout;
     private HTMLElement root;
     private Integer width;
     private Integer height;
@@ -34,7 +34,7 @@ public class BrowserTab extends JPanel {
         this.url = new URL(url);
         this.height = height - 100;
         this.width = width - 50;
-        this.layout = new Layout(12.0f, this.width, this.height);
+        this.layout = new OldLayout(12.0f, this.width, this.height);
         this.setFocusable(true);
 
         this.addMouseWheelListener(e -> {
