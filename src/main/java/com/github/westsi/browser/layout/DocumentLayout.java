@@ -1,14 +1,18 @@
 package com.github.westsi.browser.layout;
 
+import com.github.westsi.browser.util.Pair;
+import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.html.HTMLElement;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class DocumentLayout implements ILayoutElement {
 
-    HTMLElement node;
-    ILayoutElement parent;
-    ArrayList<ILayoutElement> children;
+    private HTMLElement node;
+    private ILayoutElement parent;
+    private ArrayList<ILayoutElement> children;
+    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
 
     public DocumentLayout(HTMLElement node) {
         this.node = node;
@@ -16,13 +20,22 @@ public class DocumentLayout implements ILayoutElement {
         this.children = new ArrayList<>();
     }
 
+    @Override
     public void layout() {
+        ILayoutElement child = new BlockLayout(this.node, this, null);
+        this.children.add(child);
+        child.layout();
+        this.displayList = child.getDisplayList();
+    }
 
+    @Override
+    public ArrayList<Pair<Point, StyledString>> getDisplayList() {
+        return this.displayList;
     }
 
     @Override
     public HTMLElement getNode() {
-        return null;
+        return this.node;
     }
 
     @Override
@@ -37,6 +50,6 @@ public class DocumentLayout implements ILayoutElement {
 
     @Override
     public ArrayList<ILayoutElement> getChildren() {
-        return null;
+        return this.children;
     }
 }
