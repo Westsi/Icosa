@@ -3,11 +3,14 @@ package com.github.westsi.browser.util.html;
 import javax.swing.text.html.HTML;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * @author Westsi
  * @version %I%
  */
+
+// Where browser.engineering uses Element, we use HTMLTag
 public class HTMLTag implements HTMLElement {
     private final String tag;
     private HashMap<String, String> attributes = new HashMap<>();
@@ -21,6 +24,9 @@ public class HTMLTag implements HTMLElement {
     }
 
     public HTMLTag(String tag, HTMLElement parent, HashMap<String, String> attributes) {
+        if (tag.contains("pre")) {
+            System.out.println("TAG="+tag);
+        }
         this.tag = tag;
         this.parent = parent;
         this.children = new ArrayList<>();

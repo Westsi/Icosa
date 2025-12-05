@@ -1,8 +1,9 @@
 package com.github.westsi.browser;
 
+import com.github.westsi.browser.layout.DocumentLayout;
+import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.layout.OldLayout;
-import com.github.westsi.browser.util.Pair;
-import com.github.westsi.browser.util.StyledString;
+import com.github.westsi.browser.layout.drawn.IDrawCmd;
 import com.github.westsi.browser.util.html.HTMLElement;
 import com.github.westsi.browser.util.html.HTMLParser;
 import com.github.westsi.browser.util.url.URL;
@@ -11,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -25,16 +27,19 @@ public class BrowserTab extends JPanel {
 
     private Integer scrolled = 0;
     private final URL url;
-    private final OldLayout layout;
+//    private final OldLayout layout;
     private HTMLElement root;
     private Integer width;
     private Integer height;
+    private ArrayList<IDrawCmd> displayList;
+    private DocumentLayout document;
 
     public BrowserTab(String url, Integer width, Integer height) {
         this.url = new URL(url);
         this.height = height - 100;
         this.width = width - 50;
-        this.layout = new OldLayout(12.0f, this.width, this.height);
+//        this.layout = new OldLayout(12.0f, this.width, this.height);
+        this.displayList = new ArrayList<>();
         this.setFocusable(true);
 
         this.addMouseWheelListener(e -> {
@@ -62,8 +67,8 @@ public class BrowserTab extends JPanel {
         System.out.println("updating due to resize");
         this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
-        this.layout.updateResize(this.width, this.height);
-        this.layout.layout(this.root);
+//        this.layout.updateResize(this.width, this.height);
+//        this.layout.layout(this.root);
     }
 
     @Override
@@ -79,13 +84,34 @@ public class BrowserTab extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
 //        System.out.println("rerendering tab " + url);
-        super.paintComponent(g);
-        for (Pair<Point, StyledString> renderchunk : this.layout.getDisplayList()) {
-            if (renderchunk.getFirst().y > scrolled + height) continue;
-            if (renderchunk.getFirst().y < scrolled) continue;
-            g.setFont(renderchunk.getSecond().font);
-            this.setFont(renderchunk.getSecond().font);
-            g.drawString(renderchunk.getSecond().string, renderchunk.getFirst().x, renderchunk.getFirst().y - scrolled);
+//        super.paintComponent(g);
+//        for (Pair<Point, StyledString> renderchunk : this.layout.getDisplayList()) {
+//            if (renderchunk.getFirst().y > scrolled + height) continue;
+//            if (renderchunk.getFirst().y < scrolled) continue;
+//            g.setFont(renderchunk.getSecond().font);
+//            this.setFont(renderchunk.getSecond().font);
+//            g.drawString(renderchunk.getSecond().string, renderchunk.getFirst().x, renderchunk.getFirst().y - scrolled);
+//        }
+        for (IDrawCmd cmd: this.displayList) {
+            if (cmd.getTop() > this.scrolled + height) continue;
+            if (cmd.getBottom() < this.scrolled) continue;
+            cmd.execute(this, g);
+        }
+    }
+
+    /*
+    * def draw(self):
+        self.canvas.delete("all")
+        for cmd in self.display_list:
+            if cmd.top > self.scroll + HEIGHT: continue
+            if cmd.bottom < self.scroll: continue
+            cmd.execute(self.scroll, self.canvas)
+    * */
+
+    private void paint_tree(ILayoutElement layoutElement, ArrayList<IDrawCmd> displayList) {
+        displayList.addAll(layoutElement.paint());
+        for (ILayoutElement child : layoutElement.getChildren()) {
+            paint_tree(child, displayList);
         }
     }
 
@@ -106,7 +132,16 @@ public class BrowserTab extends JPanel {
         HTMLParser parser = new HTMLParser();
         HTMLElement root = parser.parse(body);
         this.root = root;
+        this.document = new DocumentLayout(root);
+        this.document.layout();
+        this.displayList = new ArrayList<>();
+        paint_tree(this.document, this.displayList);
         parser.printTree(root, 0);
-        this.layout.layout(this.root);
+//        this.paintComponent();
+//        this.layout.layout(this.root);
+    }
+
+    public Integer getScrolled() {
+        return this.scrolled;
     }
 }

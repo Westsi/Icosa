@@ -99,6 +99,7 @@ public class HTMLParser {
 
     private void addTag(String tag) {
         Pair<String, HashMap<String, String>> attributedTag = this.getAttributes(tag);
+//        System.out.println("AttributedTag="+attributedTag.getFirst());
         tag = attributedTag.getFirst();
         HashMap<String, String> attributes = attributedTag.getSecond();
 
@@ -141,9 +142,10 @@ public class HTMLParser {
     }
 
     private Pair<String, HashMap<String, String>> getAttributes(String text) {
-        ArrayList<String> parts = new ArrayList<>(Arrays.asList(text.split(" "))); // doesn't handle attributes with whitespace
+        ArrayList<String> parts = new ArrayList<>(Arrays.asList(text.trim().split("\\s+|\\n"))); // doesn't handle attributes with whitespace
 
         String tag = casefold(parts.remove(0));
+//        System.out.println("Detected Tag="+tag);
         HashMap<String, String> attributes = new HashMap<>();
 
         for (String attrpair : parts) {

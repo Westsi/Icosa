@@ -1,16 +1,11 @@
 package com.github.westsi.browser;
 
-import com.github.westsi.browser.util.Triplet;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static java.awt.BorderLayout.EAST;
 
 /**
  * The overall browser window.&nbsp; Responsible for handling <code>BrowserTab</code>s and the global <code>JFrame</code>.
