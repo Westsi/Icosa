@@ -8,7 +8,7 @@ package com.github.westsi.browser.util;
  * @param <S> The type of the second piece of data
  * @param <T> The type of the third piece of data
  */
-public class Triplet<F, S, T> {
+public class Quartet<F, S, T, O> {
     public F getFirst() {
         return first;
     }
@@ -33,14 +33,24 @@ public class Triplet<F, S, T> {
         this.third = third;
     }
 
+    public O getFourth() {
+        return fourth;
+    }
+
+    public void setFourth(O fourth) {
+        this.fourth = fourth;
+    }
+
     private F first;
     private S second;
     private T third;
+    private O fourth;
 
-    public Triplet(F first, S second, T third) {
+    public Quartet(F first, S second, T third, O fourth) {
         this.first = first;
         this.second = second;
         this.third = third;
+        this.fourth = fourth;
     }
 
 

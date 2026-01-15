@@ -87,7 +87,7 @@ public class OldLayout {
             Font f = font;
             @Override
             public void run() {
-                displayList.add(new Pair<>(new Point(cx, cy), new StyledString(w, f)));
+                displayList.add(new Pair<>(new Point(cx, cy), new StyledString(w, f, "")));
             }
         });
         this.cursorX += wordWidth + new Canvas().getFontMetrics(font).stringWidth(" ");

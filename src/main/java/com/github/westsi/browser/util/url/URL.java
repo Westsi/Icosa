@@ -69,6 +69,40 @@ public class URL {
         return contents;
     }
 
+//    def resolve(self, url):
+//        if "://" in url: return URL(url)
+//        if not url.startswith("/"):
+//            dir, _ = self.path.rsplit("/", 1)
+//            while url.startswith("../"):
+//                _, url = url.split("/", 1)
+//                if "/" in dir:
+//                    dir, _ = dir.rsplit("/", 1)
+//            url = dir + "/" + url
+//        if url.startswith("//"):
+//                return URL(self.scheme + ":" + url)
+//        else:
+//                return URL(self.scheme + "://" + self.host + \
+//            ":" + str(self.port) + url)
+
+    public URL resolve(String nurl) {
+        if (nurl.contains("://")) {return new URL(nurl);}
+        if (!nurl.startsWith("/")) {
+            String dir = this.url.split("/", 1)[0];
+            while (nurl.startsWith("../")) {
+                nurl = nurl.split("/", 1)[1];
+                if (dir.contains("/")) {
+                    dir = dir.split("/", 1)[0];
+                }
+            }
+            nurl = dir + "/" + nurl;
+        }
+        if (nurl.startsWith("//")) {
+            return new URL("https:" + nurl);
+        } else {
+            return new URL("BROKEN");
+        }
+    }
+
     @Override
     public String toString() {
         return url;

@@ -32,6 +32,8 @@ public class Pair<F, S> {
         this.second = second;
     }
 
+    public Pair() {}
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Pair{");

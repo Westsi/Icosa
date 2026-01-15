@@ -21,12 +21,12 @@ public class DrawRect implements IDrawCmd {
     }
     @Override
     public Integer getTop() {
-        return 0;
+        return this.top;
     }
 
     @Override
     public Integer getBottom() {
-        return 0;
+        return this.bottom;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.github.westsi.browser.util.html;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * HTML Element interface to use as lexed HTML tokens.
@@ -14,5 +15,9 @@ public interface HTMLElement {
     HTMLElement getParent();
     ArrayList<HTMLElement> getChildren();
     void addChild(HTMLElement child);
+    void setChildren(ArrayList<HTMLElement> newChildren);
+    void setStyle(HashMap<String, String> styleMap);
+    void addStyle(String key, String value);
+    HashMap<String, String> getStyle();
 }
 

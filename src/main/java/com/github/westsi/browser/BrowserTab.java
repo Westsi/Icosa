@@ -4,6 +4,11 @@ import com.github.westsi.browser.layout.DocumentLayout;
 import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.layout.OldLayout;
 import com.github.westsi.browser.layout.drawn.IDrawCmd;
+import com.github.westsi.browser.util.Pair;
+import com.github.westsi.browser.util.css.CSSParser;
+import com.github.westsi.browser.util.css.CSSUtils;
+import com.github.westsi.browser.util.css.ISelector;
+import com.github.westsi.browser.util.css.SortByPriority;
 import com.github.westsi.browser.util.html.HTMLElement;
 import com.github.westsi.browser.util.html.HTMLParser;
 import com.github.westsi.browser.util.url.URL;
@@ -13,6 +18,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -128,15 +135,31 @@ public class BrowserTab extends JPanel {
             body = "<html><body><h1>Page load was interrupted.</h1></body></html>";
         } catch (Exception e) {
             body = "<html><body><h1>Something went wrong.</h1></body></html>";
+            System.out.println(e);
         }
         HTMLParser parser = new HTMLParser();
         HTMLElement root = parser.parse(body);
+        ArrayList<Pair<ISelector, HashMap<String, String>>> rules = (ArrayList<Pair<ISelector, HashMap<String, String>>>) Browser.getInstance().defaultStyles.clone();
         this.root = root;
+        ArrayList<String> cssLinks = CSSUtils.getCSSLinks(root);
+        for (String link : cssLinks) {
+            URL styleURL = this.url.resolve(link);
+            body = "";
+            try {
+                body = styleURL.Request();
+            }  catch (Exception e) {
+                System.out.println("Stylesheet failed to load:" + styleURL.toString());
+                continue;
+            }
+            rules.addAll(new CSSParser(body).parse());
+        }
+        rules.sort(new SortByPriority());
+        CSSUtils.styleNode(root, rules);
         this.document = new DocumentLayout(root);
         this.document.layout();
         this.displayList = new ArrayList<>();
         paint_tree(this.document, this.displayList);
-        parser.printTree(root, 0);
+//        parser.printTree(root, 0);
 //        this.paintComponent();
 //        this.layout.layout(this.root);
     }

@@ -1,11 +1,20 @@
 package com.github.westsi.browser;
 
+import com.github.westsi.browser.util.Pair;
+import com.github.westsi.browser.util.css.CSSParser;
+import com.github.westsi.browser.util.css.ISelector;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /**
  * The overall browser window.&nbsp; Responsible for handling <code>BrowserTab</code>s and the global <code>JFrame</code>.
@@ -24,7 +33,7 @@ public class Browser {
 
     private final Integer refreshRate = 30;
 
-
+    public ArrayList<Pair<ISelector, HashMap<String, String>>> defaultStyles;
     public static HashMap<Integer, Font> fonts = new HashMap<>();
 
     static {
@@ -49,6 +58,15 @@ public class Browser {
      * Creates a <code>JFrame</code> for the browser and initialises it with required settings.
      */
     private Browser() {
+//        DEFAULT_STYLE_SHEET = CSSParser(open("browser.css").read()).parse()
+        String contents = "";
+        try {
+            contents = new String(Browser.class.getResourceAsStream("/browser.css").readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        System.out.println("contents: " + contents);
+        this.defaultStyles = new CSSParser(contents).parse();
         this.frame = new JFrame("Xonize Icosa");
         this.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         try {

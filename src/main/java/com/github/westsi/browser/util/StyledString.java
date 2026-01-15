@@ -10,10 +10,12 @@ import java.awt.*;
 public class StyledString {
     public String string;
     public Font font;
+    public String color;
 
-    public StyledString(String string, Font font) {
+    public StyledString(String string, Font font, String color) {
         this.string = string;
         this.font = font;
+        this.color = color;
     }
 
     @Override

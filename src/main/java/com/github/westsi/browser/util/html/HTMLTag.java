@@ -16,6 +16,7 @@ public class HTMLTag implements HTMLElement {
     private HashMap<String, String> attributes = new HashMap<>();
     private HTMLElement parent;
     private ArrayList<HTMLElement> children;
+    public HashMap<String, String> style = new HashMap<>();
 
     public HTMLTag(String tag, HTMLElement parent) {
         this.tag = tag;
@@ -63,5 +64,24 @@ public class HTMLTag implements HTMLElement {
 
     public void addAttribute(String attr, String val) {
         attributes.put(attr, val);
+    }
+
+    public void setChildren(ArrayList<HTMLElement> newChildren) {
+        this.children = newChildren;
+    }
+
+    @Override
+    public void setStyle(HashMap<String, String> styleMap) {
+        this.style = styleMap;
+    }
+
+    @Override
+    public void addStyle(String key, String value) {
+        this.style.put(key, value);
+    }
+
+    @Override
+    public HashMap<String, String> getStyle() {
+        return this.style;
     }
 }
