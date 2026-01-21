@@ -38,6 +38,8 @@ public class URL {
                 return GetFileContents();
             case DATA:
                 return GetDataUrlContents();
+            case ICOSA_INTERNAL:
+                return GetIcosaInternalUrlContents();
             default:
                 HttpRequest request = HttpRequest.newBuilder().uri(new URI(this.url)).GET().timeout(Duration.of(10, SECONDS)).setHeader("User-Agent", "Icosa/1.0.0.0 (Xonize)").build();
                 HttpResponse<String> response = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build().send(request, HttpResponse.BodyHandlers.ofString());
@@ -68,6 +70,20 @@ public class URL {
             return "<html><body><h1>Malformed data URL</h1></body></html>";
         }
         return contents;
+    }
+
+    public String GetIcosaInternalUrlContents() {
+        // Can be hardcoded because it is guaranteed that if this point is reached the URL starts with "icosa://"
+        String intUrl = this.url.substring(8);
+        switch (intUrl) {
+            case "home":
+                return GetIcosaHomeContents();
+        }
+        return "";
+    }
+
+    public String GetIcosaHomeContents() {
+        return "<html><body><h1>Welcome to Icosa!</h1><h4>Enter a webpage URL in the bar above...</h4></body></html>";
     }
 
 //    def resolve(self, url):

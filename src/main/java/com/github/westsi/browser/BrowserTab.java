@@ -15,6 +15,7 @@ import com.github.westsi.browser.util.html.HTMLParser;
 import com.github.westsi.browser.util.html.HTMLTag;
 import com.github.westsi.browser.util.html.HTMLText;
 import com.github.westsi.browser.util.url.URL;
+import com.github.westsi.browser.util.url.URLType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +36,7 @@ public class BrowserTab extends JPanel {
     public static Integer HSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).charWidth('m');
     public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight() * 5;
 
-    private Integer scrolled = 0;
+    protected Integer scrolled = 0;
     private URL url;
 //    private final OldLayout layout;
     private HTMLElement root;
@@ -43,11 +44,14 @@ public class BrowserTab extends JPanel {
     private Integer height;
     private ArrayList<IDrawCmd> displayList;
     private DocumentLayout document;
-    private ArrayList<Pair<URL, Integer>> pastUrls = new ArrayList<>();
-    private Browser parent;
+    protected ArrayList<URL> urls = new ArrayList<>();
+    protected Integer currentUrlIndex = 0;
+    protected Browser parent;
+    private String title;
 
     public BrowserTab(String url, Integer width, Integer height, Browser parent) {
         this.url = new URL(url);
+        this.urls.add(this.url);
         this.height = height - 100;
         this.width = width - 50;
         this.parent = parent;
@@ -71,8 +75,8 @@ public class BrowserTab extends JPanel {
             } else { //scroll type == MouseWheelEvent.WHEEL_BLOCK_SCROLL
                 message += "Scroll type: WHEEL_BLOCK_SCROLL\n";
             }
-            scrolled = Math.max(0, scrolled);
-            System.out.println(message + scrolled);
+            scrolled = Math.min(Math.max(0, scrolled), this.document.getHeight());
+//            System.out.println(message + scrolled);
         });
 
         this.addMouseListener(new MouseAdapter() {
@@ -85,10 +89,27 @@ public class BrowserTab extends JPanel {
 
     public void updateResize() {
         System.out.println("updating due to resize");
-        this.width = Browser.WIDTH - 50; // frame boundaries + extra crap
-        this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
+        this.width = Browser.getInstance().WIDTH - 50; // frame boundaries + extra crap
+        this.height = Browser.getInstance().HEIGHT - 100; // frame boundaries + extra crap
+
+        // issue with stuff being rendered twice - i think this is from children not being cleared.
+        // temporary fix - possibly bad performance in the future
+        DocumentLayout newd = new DocumentLayout(this.document.getNode());
+        this.document = newd;
+        //
+        this.document.setWidth(this.width-50);
+        this.document.layout();
+        this.displayList = new ArrayList<>();
+        paint_tree(this.document, this.displayList);
 //        this.layout.updateResize(this.width, this.height);
 //        this.layout.layout(this.root);
+    }
+
+    protected void navigateUpdates(Integer scrolled) {
+        this.LoadWebPage();
+        this.title = null;
+        this.parent.updateTabName(this.getName());
+        this.scrolled = scrolled;
     }
 
     private void click(MouseEvent e) {
@@ -113,14 +134,13 @@ public class BrowserTab extends JPanel {
             if (elt instanceof HTMLText) {
 
             } else if (Objects.equals(((HTMLTag) elt).getTag(), "a") && ((HTMLTag) elt).getAttributes().containsKey("href")) {
-                pastUrls.add(new Pair<>(this.url, this.scrolled));
                 String nurl = ((HTMLTag) elt).getAttributes().get("href");
                 System.out.println(nurl);
                 this.url = this.url.resolve(nurl);
+                urls.add(this.url);
+                currentUrlIndex++;
                 System.out.println(this.url.toString());
-                this.parent.updateTabName(this.getName());
-                this.LoadWebPage();
-                this.scrolled = 0;
+                this.navigateUpdates(0);
                 cont = false;
             }
             elt = elt.getParent();
@@ -135,7 +155,37 @@ public class BrowserTab extends JPanel {
 
     @Override
     public String getName() {
-        return this.url.toString();
+        if (this.root == null) {
+            this.title = this.url.toString();
+        }
+        // if root is not null
+        if (this.title == null) {
+            ArrayList<HTMLElement> al = new ArrayList<>();
+            CSSUtils.treeToList(this.root, al);
+            for (HTMLElement he : al) {
+                if (he instanceof HTMLTag) {
+                    if (((HTMLTag) he).getTag().equals("title")) {
+                        HTMLText titleCont = (HTMLText) he.getChildren().get(0);
+                        System.out.println(he.getChildren());
+                        this.title = titleCont.getText();
+                        break;
+                    }
+                }
+            }
+        }
+        // this is if root is not null but there are no title elements
+        if (this.title == null) {
+            this.title = this.url.toString();
+        }
+//        System.out.println("Called getName()" + this.title);
+        return this.title;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+    protected void setUrl(URL nurl) {
+        this.url = nurl;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class Main {
         browser.LoadWebPage("https://browser.engineering/styles.html");
 //        browser.LoadWebPage("https://youtube.com");
 //        browser.LoadWebPage("https://westsi.pages.dev");
-//        browser.LoadWebPage("https://hweeo");
+//        browser.LoadWebPage("https://chatgpt.com");
 //          browser.LoadWebPage("data:text/html,<div class=\"sourceCode\" id=\"cb1\"><pre\n" +
 //                  "class=\"sourceCode html example\"><code class=\"sourceCode\"><span id=\"cb1-1\"><a href=\"#cb1-1\" aria-hidden=\"true\" tabindex=\"-1\"></a><span class=\"dt\">&lt;</span><span class=\"kw\">div</span><span class=\"ot\"> style</span><span class=\"op\">=</span><span class=\"st\">&quot;background-color:lightblue&quot;</span><span class=\"dt\">&gt;</span>Blue background<span class=\"dt\">&lt;/</span><span class=\"kw\">div</span><span class=\"dt\">&gt;</span></span></code></pre></div>\n" +
 //                  "<p>And it renders like this:</p>\n" +

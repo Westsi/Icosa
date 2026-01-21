@@ -75,39 +75,41 @@ public class LineLayout implements ILayoutElement {
             else:
                 self.y = self.parent.y
         */
-    this.width = this.parent.getWidth();
-    this.x = this.parent.getX();
-    if (this._previous != null) {
-        this.y = this._previous.getY() + this._previous.getHeight();
-    } else {
-        this.y = this.parent.getY();
-    }
 
-    for (ILayoutElement word : this.children) {
-        word.layout();
-    }
 
-        Integer maxAscent = 0;
-        Integer maxDescent = 0;
-        for (ILayoutElement _word : this.children) {
-            TextLayout word = (TextLayout) _word;
-            int lma = new Canvas().getFontMetrics(word.getFont()).getMaxAscent();
-            if (lma > maxAscent) {
-                maxAscent = lma;
-            }
-            int lmd = new Canvas().getFontMetrics(word.getFont()).getMaxDescent();
-            if (lmd > maxDescent) {
-                maxDescent = lmd;
-            }
-        }
-        Integer baseline = (int) (this.y + 1.25 * maxAscent);
-
-        for (ILayoutElement _word : this.children) {
-            TextLayout word = (TextLayout) _word;
-            word.setY(baseline - new Canvas().getFontMetrics(word.getFont()).getMaxAscent());
+        this.width = this.parent.getWidth();
+        this.x = this.parent.getX();
+        if (this._previous != null) {
+            this.y = this._previous.getY() + this._previous.getHeight();
+        } else {
+            this.y = this.parent.getY();
         }
 
-        this.height = (int) (1.25 * (maxAscent + maxDescent));
+        for (ILayoutElement word : this.children) {
+            word.layout();
+        }
+
+            Integer maxAscent = 0;
+            Integer maxDescent = 0;
+            for (ILayoutElement _word : this.children) {
+                TextLayout word = (TextLayout) _word;
+                int lma = new Canvas().getFontMetrics(word.getFont()).getMaxAscent();
+                if (lma > maxAscent) {
+                    maxAscent = lma;
+                }
+                int lmd = new Canvas().getFontMetrics(word.getFont()).getMaxDescent();
+                if (lmd > maxDescent) {
+                    maxDescent = lmd;
+                }
+            }
+            Integer baseline = (int) (this.y + 1.25 * maxAscent);
+
+            for (ILayoutElement _word : this.children) {
+                TextLayout word = (TextLayout) _word;
+                word.setY(baseline - new Canvas().getFontMetrics(word.getFont()).getMaxAscent());
+            }
+
+            this.height = (int) (1.25 * (maxAscent + maxDescent));
 
     }
 

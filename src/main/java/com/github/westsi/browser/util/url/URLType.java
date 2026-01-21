@@ -11,7 +11,8 @@ public enum URLType {
     HTTP("http://"),
     HTTPS("https://"),
     DATA("data:"),
-    VIEW_SOURCE("view-source:");
+    VIEW_SOURCE("view-source:"),
+    ICOSA_INTERNAL("icosa://");
 
     public final String protocol;
     URLType(String protocol) {

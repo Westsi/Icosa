@@ -24,14 +24,17 @@ import java.util.Scanner;
  */
 public class Browser {
     private static Browser browser;
-    private final JFrame frame;
+    protected final JFrame frame;
 
-    private JTabbedPane tabbedPane;
+    protected JTabbedPane tabbedPane;
+    private JPanel contentPane;
 
-    public static Integer WIDTH = 720;
-    public static Integer HEIGHT = 480;
+    public Integer WIDTH = 720;
+    public Integer HEIGHT = 480;
 
     private final Integer refreshRate = 30;
+
+    private Chrome chrome;
 
     public ArrayList<Pair<ISelector, HashMap<String, String>>> defaultStyles;
     public static HashMap<Integer, Font> fonts = new HashMap<>();
@@ -52,8 +55,8 @@ public class Browser {
     }
 
 
-    private ArrayList<BrowserTab> browserTabs = new ArrayList<>();
-
+    protected ArrayList<BrowserTab> browserTabs = new ArrayList<>();
+    protected Integer tabIndex = 0;
     /**
      * Creates a <code>JFrame</code> for the browser and initialises it with required settings.
      */
@@ -76,15 +79,20 @@ public class Browser {
         }
         frame.setResizable(true);
         frame.setLocationByPlatform(true);
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Menu");
-        menu.add(new JMenuItem("Reload"));
-        menuBar.add(menu);
-        tabbedPane = new JTabbedPane();
-        frame.setContentPane(tabbedPane);
-        frame.setJMenuBar(menuBar);
-        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png")));
+//        JMenuBar menuBar = new JMenuBar();
+//        JMenu menu = new JMenu("Menu");
+//        menu.add(new JMenuItem("Reload"));
+//        menuBar.add(menu);
+        contentPane = new JPanel(new BorderLayout());
+        contentPane.setSize(WIDTH, HEIGHT);
         frame.setSize(WIDTH, HEIGHT);
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setSize(WIDTH, HEIGHT);
+        frame.setContentPane(contentPane);
+        contentPane.add(tabbedPane, BorderLayout.CENTER);
+//        frame.setJMenuBar(menuBar);
+        this.chrome = new Chrome(contentPane);
+        frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/icon.png")));
         frame.setVisible(true);
         frame.setFont(fonts.get(Font.PLAIN));
 
@@ -98,18 +106,29 @@ public class Browser {
                     for (BrowserTab bt: browserTabs) {
                         bt.updateResize();
                     }
+                    for (Component comp : tabbedPane.getComponents()) {
+                        comp.setSize(WIDTH, HEIGHT);
+                    }
                 }
             }
         });
 
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
+        ActionListener al = ae -> {
 //                System.out.println("rerendering global window");
-                frame.repaint();
+            frame.repaint();
+        };
+
+        ActionListener cl = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabIndex = tabbedPane.getSelectedIndex();
+                chrome.setActiveTab(tabIndex);
             }
         };
         Timer timer = new Timer(1000/refreshRate, al);
         timer.start();
+        Timer ctimer = new Timer(200, cl);
+        ctimer.start();
     }
 
     public static Browser getInstance() {
@@ -128,8 +147,8 @@ public class Browser {
         browserTabs.add(bt);
         JScrollPane jsp = new JScrollPane(bt);
         jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work
-        tabbedPane.add(bt.getName(), jsp);
         bt.LoadWebPage();
+        tabbedPane.add(bt.getName(), jsp);
     }
 
     public void updateTabName(String name) {
