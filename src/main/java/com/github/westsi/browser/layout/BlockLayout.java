@@ -28,7 +28,7 @@ public class BlockLayout implements ILayoutElement{
     private ArrayList<String> BLOCK_ELEMENTS = new ArrayList<>();
     private ArrayList<String> TEXTUAL_ELEMENTS = new ArrayList<>();
 
-    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
+//    private ArrayList<Pair<Point, StyledString>> displayList = new ArrayList<>();
     private Integer x, y, width, height, cursorX, cursorY, textIndent;
 //    private float fontSize;
 //    private String weight, style;
@@ -100,7 +100,7 @@ public class BlockLayout implements ILayoutElement{
         this.x = this.parent.getX();
 //        System.out.println(((HTMLTag) this.parent.getNode()).getTag());
         if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
-            System.out.println("LI INCREMENT");
+//            System.out.println("LI INCREMENT");
             this.textIndent = 16;
         }
         this.width = this.parent.getWidth();
@@ -120,29 +120,34 @@ public class BlockLayout implements ILayoutElement{
                 previous = next;
             }
         } else {
-            this.cursorX = textIndent;
-            this.cursorY = 0;
+//            this.cursorX = textIndent;
+//            this.cursorY = 0;
 //            this.weight = "normal";
 //            this.style = "roman";
 //            this.fontSize = 12;
 
-            this.line = new ArrayList<>();
+//            this.line = new ArrayList<>();
+            this.newLine();
             this.recurse(this.node);
-            this.flush();
+//            this.flush();
         }
 
         for (ILayoutElement child : this.children) {
             child.layout();
         }
-
-        if (Objects.equals(mode, "block")) {
-            for (ILayoutElement child : this.children) {
-                this.height += child.getHeight();
-                System.out.println(this.node.toString() + this.height);
-            }
-        } else {
-            this.height = this.cursorY;
+        this.height = 0;
+        for (ILayoutElement child : this.children) {
+            this.height += child.getHeight();
         }
+
+//        if (Objects.equals(mode, "block")) {
+//            for (ILayoutElement child : this.children) {
+//                this.height += child.getHeight();
+//                System.out.println(this.node.toString() + this.height);
+//            }
+//        } else {
+//            this.height = this.cursorY;
+//        }
 //        System.out.println("Layout for " + this.node.toString() + " completed successfully");
     }
 
@@ -188,7 +193,7 @@ public class BlockLayout implements ILayoutElement{
         } else {
 //            this.openTag(((HTMLTag) tree).getTag());
             if (Objects.equals(((HTMLTag) tree).getTag(), "br")) {
-                this.flush();
+                this.newLine();
             }
             for (HTMLElement child : tree.getChildren()) {
                 this.recurse(child);
@@ -223,10 +228,22 @@ public class BlockLayout implements ILayoutElement{
 //        Font font = Browser.fonts.get(fontFlag).deriveFont(fontFlag, fontSize);
         Font font = Browser.fonts.get(fontFlag).deriveFont(fontFlag, size);
         Integer wordWidth = new Canvas().getFontMetrics(font).stringWidth(word);
-        if (this.cursorX + wordWidth > this.width-HSTEP) this.flush();
-        String color = node.getStyle().get("color");
-        this.line.add(new Quartet<>(this.cursorX, word, font, color));
+        if (this.cursorX + wordWidth > this.width-HSTEP) this.newLine();
+//        String color = node.getStyle().get("color");
+//        this.line.add(new Quartet<>(this.cursorX, word, font, color));
+//        this.cursorX += wordWidth + new Canvas().getFontMetrics(font).stringWidth(" ");
+        ILayoutElement line = this.children.get(this.children.size() - 1);
+        ILayoutElement prevword = (!line.getChildren().isEmpty()) ? line.getChildren().get(line.getChildren().size()-1) : null;
+        TextLayout text = new TextLayout(node, word, line, prevword);
+        line.getChildren().add(text);
         this.cursorX += wordWidth + new Canvas().getFontMetrics(font).stringWidth(" ");
+    }
+
+    private void newLine() {
+        this.cursorX = 0;
+        ILayoutElement lastLine = !this.children.isEmpty() ? this.children.get(this.children.size()-1) : null;
+        LineLayout newline = new LineLayout(this.node, this, lastLine);
+        this.children.add(newline);
     }
 
 //    private void openTag(String tag) {
@@ -271,35 +288,35 @@ public class BlockLayout implements ILayoutElement{
 //        }
 //    }
 
-    private void flush() {
-        Integer maxAscent = 0;
-        Integer maxDescent = 0;
-        for (Quartet<Integer, String, Font, String> quartet : this.line) {
-            int lma = new Canvas().getFontMetrics(quartet.getThird()).getMaxAscent();
-            if (lma > maxAscent) {
-                maxAscent = lma;
-            }
-            int lmd = new Canvas().getFontMetrics(quartet.getThird()).getMaxDescent();
-            if (lmd > maxDescent) {
-                maxDescent = lmd;
-            }
-        }
-        Integer baseline = (int) (this.cursorY + 1.25 * maxAscent);
-
-//        System.out.println(this.node.toString() + ( baseline + 1.25*maxDescent));
-
-
-        for (Quartet<Integer, String, Font, String> quartet : this.line) {
-            Integer ix = this.x + quartet.getFirst();
-            Integer iy = this.y + baseline - new Canvas().getFontMetrics(quartet.getThird()).getMaxAscent();
-            this.displayList.add(new Pair<>(new Point(ix, iy), new StyledString(quartet.getSecond(), quartet.getThird(), quartet.getFourth())));
-        }
-
-        this.cursorX = textIndent;
-        this.line = new ArrayList<>();
-        this.cursorY = (int) (baseline + 1.25 * maxDescent);
-
-    }
+//    private void flush() {
+//        Integer maxAscent = 0;
+//        Integer maxDescent = 0;
+//        for (Quartet<Integer, String, Font, String> quartet : this.line) {
+//            int lma = new Canvas().getFontMetrics(quartet.getThird()).getMaxAscent();
+//            if (lma > maxAscent) {
+//                maxAscent = lma;
+//            }
+//            int lmd = new Canvas().getFontMetrics(quartet.getThird()).getMaxDescent();
+//            if (lmd > maxDescent) {
+//                maxDescent = lmd;
+//            }
+//        }
+//        Integer baseline = (int) (this.cursorY + 1.25 * maxAscent);
+//
+////        System.out.println(this.node.toString() + ( baseline + 1.25*maxDescent));
+//
+//
+//        for (Quartet<Integer, String, Font, String> quartet : this.line) {
+//            Integer ix = this.x + quartet.getFirst();
+//            Integer iy = this.y + baseline - new Canvas().getFontMetrics(quartet.getThird()).getMaxAscent();
+//            this.displayList.add(new Pair<>(new Point(ix, iy), new StyledString(quartet.getSecond(), quartet.getThird(), quartet.getFourth())));
+//        }
+//
+//        this.cursorX = textIndent;
+//        this.line = new ArrayList<>();
+//        this.cursorY = (int) (baseline + 1.25 * maxDescent);
+//
+//    }
 
     public String layoutMode() {
         if (this.node instanceof HTMLText) {
@@ -318,7 +335,7 @@ public class BlockLayout implements ILayoutElement{
     public ArrayList<IDrawCmd> paint() {
         ArrayList<IDrawCmd> cmds = new ArrayList<>();
         String bgColor = this.node.getStyle().getOrDefault("background-color", "transparent");
-        if (!this.node.getStyle().isEmpty()) {System.out.println("STYLE OF NODE" + this.node.getStyle());}
+//        if (!this.node.getStyle().isEmpty()) {System.out.println("STYLE OF NODE" + this.node.getStyle());}
         if (!Objects.equals(bgColor, "transparent")) {
             Integer x2 = this.x + this.width;
             Integer y2 = this.y + this.height;
@@ -327,18 +344,18 @@ public class BlockLayout implements ILayoutElement{
         }
 
         if (Objects.equals(this.layoutMode(), "inline")) {
-            for (Pair<Point, StyledString> pair: this.displayList) {
-                DrawText text = new DrawText(pair.getFirst().x, pair.getFirst().y, pair.getSecond().string, pair.getSecond().font, CSSUtils.cssColorToJava(pair.getSecond().color));
-                cmds.add(text);
-            }
+//            for (Pair<Point, StyledString> pair: this.displayList) {
+//                DrawText text = new DrawText(pair.getFirst().x, pair.getFirst().y, pair.getSecond().string, pair.getSecond().font, CSSUtils.cssColorToJava(pair.getSecond().color));
+//                cmds.add(text);
+//            }
         }
         return cmds;
     }
 
-    @Override
-    public ArrayList<Pair<Point, StyledString>> getDisplayList() {
-        return this.displayList;
-    }
+//    @Override
+//    public ArrayList<Pair<Point, StyledString>> getDisplayList() {
+//        return this.displayList;
+//    }
     @Override
     public HTMLElement getNode() {
         return this.node;

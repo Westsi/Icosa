@@ -9,6 +9,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -87,20 +88,29 @@ public class URL {
     public URL resolve(String nurl) {
         if (nurl.contains("://")) {return new URL(nurl);}
         if (!nurl.startsWith("/")) {
-            String dir = this.url.split("/", 1)[0];
+            String dir = splitAtLastSlash(this.url)[0];
+            System.out.println(Arrays.toString(splitAtLastSlash(this.url)));
             while (nurl.startsWith("../")) {
-                nurl = nurl.split("/", 1)[1];
+                nurl = splitAtLastSlash(nurl)[1];
                 if (dir.contains("/")) {
-                    dir = dir.split("/", 1)[0];
+                    dir = splitAtLastSlash(dir)[0];
                 }
             }
             nurl = dir + "/" + nurl;
+            return new URL(nurl);
         }
         if (nurl.startsWith("//")) {
             return new URL("https:" + nurl);
         } else {
             return new URL("BROKEN");
         }
+    }
+
+    private static String[] splitAtLastSlash(String s) {
+        int pos = s.lastIndexOf('/');
+        if(pos == -1)
+            return new String[] {s};
+        return new String[] {s.substring(0, pos), s.substring(pos+1)};
     }
 
     @Override

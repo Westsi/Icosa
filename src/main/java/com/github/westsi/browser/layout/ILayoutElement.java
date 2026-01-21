@@ -19,5 +19,5 @@ public interface ILayoutElement {
     Integer getWidth();
     void layout();
     ArrayList<IDrawCmd> paint();
-    ArrayList<Pair<Point, StyledString>> getDisplayList();
+//    ArrayList<Pair<Point, StyledString>> getDisplayList();
 }

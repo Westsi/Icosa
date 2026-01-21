@@ -26,7 +26,7 @@ public class HTMLTag implements HTMLElement {
 
     public HTMLTag(String tag, HTMLElement parent, HashMap<String, String> attributes) {
         if (tag.contains("pre")) {
-            System.out.println("TAG="+tag);
+//            System.out.println("TAG="+tag);
         }
         this.tag = tag;
         this.parent = parent;

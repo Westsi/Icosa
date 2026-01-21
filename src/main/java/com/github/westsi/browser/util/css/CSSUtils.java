@@ -1,5 +1,6 @@
 package com.github.westsi.browser.util.css;
 
+import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.html.HTMLElement;
 import com.github.westsi.browser.util.html.HTMLTag;
@@ -35,7 +36,7 @@ public class CSSUtils {
 
 
         if (node instanceof HTMLTag) {
-            System.out.println(((HTMLTag) node).getAttributes().containsKey("style"));
+//            System.out.println(((HTMLTag) node).getAttributes().containsKey("style"));
         }
         if (node instanceof HTMLTag && ((HTMLTag) node).getAttributes().containsKey("style")) {
             HashMap<String, String> pairs = new CSSParser(((HTMLTag) node).getAttributes().get("style")).body();
@@ -90,6 +91,14 @@ public class CSSUtils {
     public static ArrayList<HTMLElement> treeToList(HTMLElement tree, ArrayList<HTMLElement> list) {
         list.add(tree);
         for (HTMLElement child : tree.getChildren()) {
+            treeToList(child, list);
+        }
+        return list;
+    }
+
+    public static ArrayList<ILayoutElement> treeToList(ILayoutElement tree, ArrayList<ILayoutElement> list) {
+        list.add(tree);
+        for (ILayoutElement child : tree.getChildren()) {
             treeToList(child, list);
         }
         return list;

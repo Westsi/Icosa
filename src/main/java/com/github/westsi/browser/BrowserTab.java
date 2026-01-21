@@ -3,6 +3,7 @@ package com.github.westsi.browser;
 import com.github.westsi.browser.layout.DocumentLayout;
 import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.layout.OldLayout;
+import com.github.westsi.browser.layout.TextLayout;
 import com.github.westsi.browser.layout.drawn.IDrawCmd;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.css.CSSParser;
@@ -11,6 +12,8 @@ import com.github.westsi.browser.util.css.ISelector;
 import com.github.westsi.browser.util.css.SortByPriority;
 import com.github.westsi.browser.util.html.HTMLElement;
 import com.github.westsi.browser.util.html.HTMLParser;
+import com.github.westsi.browser.util.html.HTMLTag;
+import com.github.westsi.browser.util.html.HTMLText;
 import com.github.westsi.browser.util.url.URL;
 
 import javax.swing.*;
@@ -18,8 +21,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -33,18 +36,21 @@ public class BrowserTab extends JPanel {
     public static Integer VSTEP = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN)).getHeight() * 5;
 
     private Integer scrolled = 0;
-    private final URL url;
+    private URL url;
 //    private final OldLayout layout;
     private HTMLElement root;
     private Integer width;
     private Integer height;
     private ArrayList<IDrawCmd> displayList;
     private DocumentLayout document;
+    private ArrayList<Pair<URL, Integer>> pastUrls = new ArrayList<>();
+    private Browser parent;
 
-    public BrowserTab(String url, Integer width, Integer height) {
+    public BrowserTab(String url, Integer width, Integer height, Browser parent) {
         this.url = new URL(url);
         this.height = height - 100;
         this.width = width - 50;
+        this.parent = parent;
 //        this.layout = new OldLayout(12.0f, this.width, this.height);
         this.displayList = new ArrayList<>();
         this.setFocusable(true);
@@ -68,6 +74,13 @@ public class BrowserTab extends JPanel {
             scrolled = Math.max(0, scrolled);
             System.out.println(message + scrolled);
         });
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                click(e);
+            }
+        });
     }
 
     public void updateResize() {
@@ -76,6 +89,43 @@ public class BrowserTab extends JPanel {
         this.height = Browser.HEIGHT - 100; // frame boundaries + extra crap
 //        this.layout.updateResize(this.width, this.height);
 //        this.layout.layout(this.root);
+    }
+
+    private void click(MouseEvent e) {
+        Integer cx = e.getX();
+        Integer cy = e.getY() + this.scrolled;
+
+        ArrayList<ILayoutElement> al = new ArrayList<>();
+        CSSUtils.treeToList(this.document, al);
+        ArrayList<ILayoutElement> objs = new ArrayList<>();
+        for (ILayoutElement obj : al) {
+            if (obj.getX() <= cx
+                && cx < obj.getX() + obj.getWidth()
+                && obj.getY() <= cy
+                && cy < obj.getY() + obj.getHeight()) {
+                objs.add(obj);
+            }
+        }
+        if (objs.isEmpty()) {return;}
+        HTMLElement elt = objs.get(objs.size()-1).getNode();
+        boolean cont = true;
+        while (cont) {
+            if (elt instanceof HTMLText) {
+
+            } else if (Objects.equals(((HTMLTag) elt).getTag(), "a") && ((HTMLTag) elt).getAttributes().containsKey("href")) {
+                pastUrls.add(new Pair<>(this.url, this.scrolled));
+                String nurl = ((HTMLTag) elt).getAttributes().get("href");
+                System.out.println(nurl);
+                this.url = this.url.resolve(nurl);
+                System.out.println(this.url.toString());
+                this.parent.updateTabName(this.getName());
+                this.LoadWebPage();
+                this.scrolled = 0;
+                cont = false;
+            }
+            elt = elt.getParent();
+        }
+
     }
 
     @Override

@@ -65,7 +65,7 @@ public class Browser {
         } catch (Exception e) {
             System.out.println(e);
         }
-        System.out.println("contents: " + contents);
+//        System.out.println("contents: " + contents);
         this.defaultStyles = new CSSParser(contents).parse();
         this.frame = new JFrame("Xonize Icosa");
         this.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -124,11 +124,16 @@ public class Browser {
      * @param url The URL to load
      */
     public void LoadWebPage(String url) {
-        BrowserTab bt = new BrowserTab(url, WIDTH, HEIGHT);
+        BrowserTab bt = new BrowserTab(url, WIDTH, HEIGHT, this);
         browserTabs.add(bt);
         JScrollPane jsp = new JScrollPane(bt);
         jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work
         tabbedPane.add(bt.getName(), jsp);
         bt.LoadWebPage();
+    }
+
+    public void updateTabName(String name) {
+        Integer i = tabbedPane.getSelectedIndex();
+        tabbedPane.setTitleAt(i, name);
     }
 }

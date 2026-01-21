@@ -48,7 +48,6 @@ public class DocumentLayout implements ILayoutElement {
         return new ArrayList<>();
     }
 
-    @Override
     public ArrayList<Pair<Point, StyledString>> getDisplayList() {
         return this.displayList;
     }
