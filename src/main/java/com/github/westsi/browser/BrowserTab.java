@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles layout, rendering, and interactivity for an individual browser tab.
@@ -131,11 +132,18 @@ public class BrowserTab extends JPanel {
         HTMLElement elt = objs.get(objs.size()-1).getNode();
         boolean cont = true;
         while (cont) {
+            if (elt == null) {
+                return;
+            }
             if (elt instanceof HTMLText) {
 
             } else if (Objects.equals(((HTMLTag) elt).getTag(), "a") && ((HTMLTag) elt).getAttributes().containsKey("href")) {
                 String nurl = ((HTMLTag) elt).getAttributes().get("href");
                 System.out.println(nurl);
+                if (nurl.startsWith("#")) {
+                    this.scrollToId(nurl.substring(1));
+                    return;
+                }
                 this.url = this.url.resolve(nurl);
                 urls.add(this.url);
                 currentUrlIndex++;
@@ -146,6 +154,21 @@ public class BrowserTab extends JPanel {
             elt = elt.getParent();
         }
 
+    }
+
+    private void scrollToId(String id) {
+//        System.out.println("old scroll " + scrolled);
+        ArrayList<ILayoutElement> al = new ArrayList<>();
+        CSSUtils.treeToList(document, al);
+        for (ILayoutElement el : al) {
+            if (el.getNode() instanceof HTMLTag) {
+                if (((HTMLTag) el.getNode()).getAttributes().getOrDefault("id", "").equals(id)) {
+//                    System.out.println(el);
+                    scrolled = el.getY();
+                }
+            }
+        }
+//        System.out.println("new scroll " + scrolled);
     }
 
     @Override
@@ -244,6 +267,7 @@ public class BrowserTab extends JPanel {
         ArrayList<String> cssLinks = CSSUtils.getCSSLinks(root);
         for (String link : cssLinks) {
             URL styleURL = this.url.resolve(link);
+//            System.out.println("loading css link: " + styleURL);
             body = "";
             try {
                 body = styleURL.Request();
@@ -254,6 +278,7 @@ public class BrowserTab extends JPanel {
             rules.addAll(new CSSParser(body).parse());
         }
         rules.sort(new SortByPriority());
+        System.out.println(rules);
         CSSUtils.styleNode(root, rules);
         this.document = new DocumentLayout(root);
         this.document.layout();

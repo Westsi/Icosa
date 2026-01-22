@@ -21,4 +21,9 @@ public class TagSelector implements ISelector {
     public Integer getPriority() {
         return this.priority;
     }
+
+    @Override
+    public String toString() {
+        return this.tag + "-----" + this.priority;
+    }
 }

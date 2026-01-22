@@ -149,6 +149,9 @@ public class Browser {
         jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work
         bt.LoadWebPage();
         tabbedPane.add(bt.getName(), jsp);
+        this.tabIndex = this.browserTabs.size()-1;
+        this.chrome.setActiveTab(this.tabIndex);
+        this.tabbedPane.setSelectedIndex(tabIndex);
     }
 
     public void updateTabName(String name) {

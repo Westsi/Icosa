@@ -3,8 +3,13 @@ pre {
 }
 a {
     color: blue;
+    text-decoration: underline;
+    cursor: pointer;
 }
 i {
+    font-style: italic;
+}
+em {
     font-style: italic;
 }
 b {
@@ -15,4 +20,6 @@ small {
 }
 big {
     font-size: 110%;
+}
+h1 {
 }

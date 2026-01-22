@@ -1,6 +1,7 @@
 package com.github.westsi.browser.layout;
 
 import com.github.westsi.browser.Browser;
+import com.github.westsi.browser.layout.drawn.DrawRect;
 import com.github.westsi.browser.layout.drawn.DrawText;
 import com.github.westsi.browser.layout.drawn.IDrawCmd;
 import com.github.westsi.browser.util.Pair;
@@ -11,6 +12,7 @@ import com.github.westsi.browser.util.html.HTMLElement;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Random;
 
 public class TextLayout implements ILayoutElement {
     private HTMLElement node;
@@ -21,6 +23,7 @@ public class TextLayout implements ILayoutElement {
     private int fontFlag = Font.PLAIN;
     private Integer width, height, x, y;
     private Font font;
+    private boolean underlined;
     public TextLayout(HTMLElement node, String word, ILayoutElement parent, ILayoutElement previous) {
         this.node = node;
         this.parent = parent;
@@ -82,7 +85,13 @@ public class TextLayout implements ILayoutElement {
         String weight = node.getStyle().get("font-weight");
         String style = node.getStyle().get("font-style");
         String ssize = node.getStyle().get("font-size");
+        String textDeco = node.getStyle().get("text-decoration");
+        if (textDeco != null) {
+//            System.out.println(node.getStyle());
+        }
         Integer size = (int) (Float.parseFloat(ssize.substring(0, ssize.length()-2)) * 0.75);
+        if (size != 12) System.out.println("font size " + size);
+        underlined = Objects.equals(textDeco, "underline");
         if (Objects.equals(style, "normal")) {
             fontFlag = Font.PLAIN;
         } else if (Objects.equals(style, "italic")) {
@@ -91,6 +100,12 @@ public class TextLayout implements ILayoutElement {
         if (Objects.equals(weight, "bold")) {
             fontFlag |= Font.BOLD;
         }
+
+//        if (fontFlag != Font.PLAIN) {
+//            System.out.println(fontFlag);
+//            System.out.println(node.getStyle());
+//            System.out.println(node);
+//        }
 
         this.font = Browser.fonts.get(fontFlag).deriveFont(fontFlag, size);
         this.width = new Canvas().getFontMetrics(this.font).stringWidth(word);
@@ -101,15 +116,13 @@ public class TextLayout implements ILayoutElement {
         } else {
             this.x = this.parent.getX();
         }
-
         this.height = new Canvas().getFontMetrics(this.font).getHeight();
-
     }
 
     @Override
     public ArrayList<IDrawCmd> paint() {
         ArrayList<IDrawCmd> a = new ArrayList<>();
-        a.add(new DrawText(this.x, this.y, this.word, this.font, CSSUtils.cssColorToJava(node.getStyle().get("color"))));
+        a.add(new DrawText(this.x, this.y, this.word, this.font, CSSUtils.cssColorToJava(node.getStyle().get("color")), underlined));
         return a;
     }
 

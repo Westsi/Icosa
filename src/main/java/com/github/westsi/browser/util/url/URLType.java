@@ -27,6 +27,7 @@ public enum URLType {
         for (URLType u : values()) {
             if (url.startsWith(u.protocol)) return u;
         }
+//        System.out.println("null urltype");
         return null;
     }
 

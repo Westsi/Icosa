@@ -4,6 +4,7 @@ import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.html.HTMLElement;
 import com.github.westsi.browser.util.html.HTMLTag;
+import com.github.westsi.browser.util.html.HTMLText;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -18,16 +19,30 @@ public class CSSUtils {
         node.setStyle(new HashMap<>());
 
         // apply inherited properties
-        for (String prop : INHERITED_PROPERTIES.keySet()) {
-            if (node.getParent() != null) {
+//        for (String prop : INHERITED_PROPERTIES.keySet()) {
+//            if (node.getParent() != null) {
+//                node.addStyle(prop, node.getParent().getStyle().get(prop));
+//            } else {
+//                node.addStyle(prop, INHERITED_PROPERTIES.get(prop));
+//            }
+//        }
+
+        // to try to make it so everything is inherited from parents
+        if (node.getParent() != null) {
+            for (String prop : node.getParent().getStyle().keySet()) {
                 node.addStyle(prop, node.getParent().getStyle().get(prop));
-            } else {
+            }
+        } else {
+            for (String prop : INHERITED_PROPERTIES.keySet()) {
                 node.addStyle(prop, INHERITED_PROPERTIES.get(prop));
             }
         }
 
         // now apply rules
         for (Pair<ISelector, HashMap<String, String>> pair : rules) {
+//            if (node instanceof HTMLText && (node.getParent() instanceof HTMLTag) && ((HTMLTag)node.getParent()).getTag().equals("a")) {
+//                System.out.println(pair.getFirst() + "///" + pair.getSecond() + "/////" + node + "---MATCHES? = " + pair.getFirst().matches(node));
+//            }
             if (!pair.getFirst().matches(node)) {continue;}
             for (String property : pair.getSecond().keySet()) {
                 node.addStyle(property, pair.getSecond().get(property));
@@ -62,11 +77,16 @@ public class CSSUtils {
     }
 
     public static Color cssColorToJava(String color) {
+        if (color == null) {
+            // BRIGHT GREEN FOR PANIC
+            return new Color(0, 255, 0, 255);
+        }
         // string color could be hex or a string
         // if hex it starts with #
         if (!(color.charAt(0) == '#')) {
             // it is a css name e.g. lightblue
-            color = COLOR_MAP.get(color);
+            // default to the same green as above
+            color = COLOR_MAP.getOrDefault(color, "#00ff00");
         }
         if (color.charAt(0) == '#') {
             // is it a RGB (#xxxxxx length = 7) or RGBA (#xxxxxxxx length = 9)?
@@ -115,7 +135,7 @@ public class CSSUtils {
         for (HTMLElement node : treeToList(nodes, new ArrayList<>())) {
             if (node instanceof HTMLTag
                     && Objects.equals(((HTMLTag) node).getTag(), "link")
-                    && ((HTMLTag) node).getAttributes().get("rel") == "stylesheet"
+                    && Objects.equals(((HTMLTag) node).getAttributes().get("rel"), "stylesheet")
                     && ((HTMLTag) node).getAttributes().containsKey("href")) {
                 links.add(((HTMLTag) node).getAttributes().get("href"));
             }

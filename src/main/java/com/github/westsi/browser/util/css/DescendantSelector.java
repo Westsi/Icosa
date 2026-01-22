@@ -23,4 +23,9 @@ public class DescendantSelector implements ISelector{
     public Integer getPriority() {
         return this.priority;
     }
+
+    @Override
+    public String toString() {
+        return this.ancestor.toString() + "-----" + this.descendant.toString() + "-----" + this.priority;
+    }
 }

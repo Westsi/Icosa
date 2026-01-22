@@ -13,6 +13,7 @@ public class Chrome {
     private JButton forwardButton;
     private JButton newTabButton;
     private JButton reloadButton;
+    private JButton closeTabButton;
 
     private JPanel tabPanel;
     private Integer activeTab;
@@ -41,14 +42,17 @@ public class Chrome {
         forwardButton = new JButton("→");
         reloadButton = new JButton("⟳");
         newTabButton = new JButton("+");
+        closeTabButton = new JButton("x");
         urlBar = new JTextField();
 
         backButton.addActionListener(e -> goBack(activeTab));
         forwardButton.addActionListener(e -> goForward(activeTab));
         reloadButton.addActionListener(e -> reload(activeTab));
-        newTabButton.addActionListener(e -> makeNewTab());
+        newTabButton.addActionListener(e -> Browser.getInstance().LoadWebPage("icosa://home"));
+        closeTabButton.addActionListener(e->closeTab());
         urlBar.addActionListener(e -> {
             String text = urlBar.getText();
+            navBar.requestFocus();
 //            System.out.println("Enter pressed: " + text);
             BrowserTab ct = Browser.getInstance().browserTabs.get(activeTab);
             URL nurl = new URL(text);
@@ -62,6 +66,7 @@ public class Chrome {
         navBar.add(forwardButton);
         navBar.add(reloadButton);
         navBar.add(newTabButton);
+        navBar.add(closeTabButton);
         navBar.add(Box.createHorizontalStrut(10));
         navBar.add(urlBar);
 
@@ -106,12 +111,10 @@ public class Chrome {
         bt.navigateUpdates(bt.scrolled);
     }
 
-    private void makeNewTab() {
-        BrowserTab nbt = new BrowserTab("icosa://home",Browser.getInstance().WIDTH, Browser.getInstance().HEIGHT, Browser.getInstance());
-        Browser.getInstance().browserTabs.add(nbt);
-        JScrollPane jsp = new JScrollPane(nbt);
-        jsp.setVerticalScrollBar(new JScrollBar()); // TODO: make this work
-        nbt.LoadWebPage();
-        Browser.getInstance().tabbedPane.add(nbt.getName(), jsp);
+    private void closeTab() {
+        Browser.getInstance().tabbedPane.removeTabAt(this.activeTab);
+        Browser.getInstance().browserTabs.remove((int) this.activeTab);
+        this.activeTab = Math.max(0, this.activeTab-1);
+        Browser.getInstance().tabIndex = Math.max(0, Browser.getInstance().tabIndex-1);
     }
 }

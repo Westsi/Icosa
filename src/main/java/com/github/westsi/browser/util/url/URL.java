@@ -28,8 +28,12 @@ public class URL {
 
     private final URLType urlType;
     public URL(String url) {
-        this.url = url;
-        urlType = URLType.getFromURLPrefix(url);
+        if (isSearchQuery(url)) {
+            this.url = "https://duckduckgo.com/html/?q=" + url;
+        } else {
+            this.url = url;
+        }
+        urlType = URLType.getFromURLPrefix(this.url);
     }
 
     public String Request() throws URISyntaxException, IOException, InterruptedException {
@@ -86,6 +90,13 @@ public class URL {
         return "<html><body><h1>Welcome to Icosa!</h1><h4>Enter a webpage URL in the bar above...</h4></body></html>";
     }
 
+    public boolean isSearchQuery(String text) {
+        URLType a = URLType.getFromURLPrefix(text);
+        boolean b = a == null;
+//        System.out.println(a + " "+ b);
+        return b;
+    }
+
 //    def resolve(self, url):
 //        if "://" in url: return URL(url)
 //        if not url.startswith("/"):
@@ -102,12 +113,14 @@ public class URL {
 //            ":" + str(self.port) + url)
 
     public URL resolve(String nurl) {
+        System.out.println("nurl " + nurl);
         if (nurl.contains("://")) {return new URL(nurl);}
         if (!nurl.startsWith("/")) {
+            System.out.println("NOT START WITH SLASH");
             String dir = splitAtLastSlash(this.url)[0];
             System.out.println(Arrays.toString(splitAtLastSlash(this.url)));
             while (nurl.startsWith("../")) {
-                nurl = splitAtLastSlash(nurl)[1];
+                nurl = nurl.split("/", 2)[1];
                 if (dir.contains("/")) {
                     dir = splitAtLastSlash(dir)[0];
                 }
@@ -115,8 +128,17 @@ public class URL {
             nurl = dir + "/" + nurl;
             return new URL(nurl);
         }
+        System.out.println("nurl2 " + nurl);
         if (nurl.startsWith("//")) {
             return new URL("https:" + nurl);
+        } else if (nurl.startsWith("/")) {
+            // to make sure the last slash comes after the last dot, otherwise the splitting stuff fucks up the https://
+            String dir = this.url;
+            if (this.url.lastIndexOf(".") < this.url.lastIndexOf("/")) {
+                dir = splitAtFirstSlashAfterDot(this.url)[0];
+            }
+            nurl = dir + nurl;
+            return new URL(nurl);
         } else {
             return new URL("BROKEN");
         }
@@ -127,6 +149,17 @@ public class URL {
         if(pos == -1)
             return new String[] {s};
         return new String[] {s.substring(0, pos), s.substring(pos+1)};
+    }
+
+    private static String[] splitAtFirstSlashAfterDot(String s) {
+        int pos = s.lastIndexOf(".");
+        if (pos == -1) {
+            // PANIC!!!
+            return new String[] {""};
+        }
+        String[] ss = s.substring(pos).split("/", 2);
+        ss[0] = s.substring(0, pos) + ss[0];
+        return ss;
     }
 
     @Override
