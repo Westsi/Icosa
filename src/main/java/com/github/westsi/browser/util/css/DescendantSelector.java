@@ -26,6 +26,6 @@ public class DescendantSelector implements ISelector{
 
     @Override
     public String toString() {
-        return this.ancestor.toString() + "-----" + this.descendant.toString() + "-----" + this.priority;
+        return this.ancestor.toString() + " " + this.descendant.toString() + "-----" + this.priority;
     }
 }

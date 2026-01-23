@@ -2,6 +2,7 @@ package com.github.westsi.browser.layout;
 
 
 import com.github.westsi.browser.Browser;
+import com.github.westsi.browser.layout.drawn.DrawOutline;
 import com.github.westsi.browser.layout.drawn.DrawRect;
 import com.github.westsi.browser.layout.drawn.DrawText;
 import com.github.westsi.browser.layout.drawn.IDrawCmd;
@@ -335,12 +336,24 @@ public class BlockLayout implements ILayoutElement{
     public ArrayList<IDrawCmd> paint() {
         ArrayList<IDrawCmd> cmds = new ArrayList<>();
         String bgColor = this.node.getStyle().getOrDefault("background-color", "transparent");
-//        if (!this.node.getStyle().isEmpty()) {System.out.println("STYLE OF NODE" + this.node.getStyle());}
         if (!Objects.equals(bgColor, "transparent")) {
             Integer x2 = this.x + this.width;
             Integer y2 = this.y + this.height;
             DrawRect rect = new DrawRect(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(bgColor));
             cmds.add(rect);
+        }
+        String outlineWidth = this.node.getStyle().getOrDefault("outline-width", null);
+        if (outlineWidth != null) {
+            Integer x2 = this.x + this.width;
+            Integer y2 = this.y + this.height;
+            outlineWidth = outlineWidth.replaceAll("\\D.*", "");
+            Integer intoutlineWidth = !outlineWidth.isEmpty() ? Integer.parseInt(outlineWidth) : 1;
+            String color = this.node.getStyle().getOrDefault("outline-color", null);
+            String style = this.node.getStyle().getOrDefault("outline-style", null);
+            if (color != null && style != null) {
+                DrawOutline outlineCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(color), style, intoutlineWidth);
+                cmds.add(outlineCmd);
+            }
         }
 
         if (Objects.equals(this.layoutMode(), "inline")) {

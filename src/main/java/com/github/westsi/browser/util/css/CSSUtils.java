@@ -44,6 +44,9 @@ public class CSSUtils {
 //                System.out.println(pair.getFirst() + "///" + pair.getSecond() + "/////" + node + "---MATCHES? = " + pair.getFirst().matches(node));
 //            }
             if (!pair.getFirst().matches(node)) {continue;}
+            if (pair.getSecond().containsKey("outline")) {
+                System.out.println(pair.getFirst() + "//OUTLINE");
+            }
             for (String property : pair.getSecond().keySet()) {
                 node.addStyle(property, pair.getSecond().get(property));
             }
@@ -89,14 +92,20 @@ public class CSSUtils {
             color = COLOR_MAP.getOrDefault(color, "#00ff00");
         }
         if (color.charAt(0) == '#') {
-            // is it a RGB (#xxxxxx length = 7) or RGBA (#xxxxxxxx length = 9)?
+            // is it a RGB (#xxxxxx length = 7) or RGBA (#xxxxxxxx length = 9) or bastardized RGB (#fff, which is #ffffff)?
             Integer r, g, b, a = 255;
             if (color.length() == 9) {
                 a = Integer.decode("#"+color.substring(7));
             }
-            r = Integer.decode("#"+color.substring(1, 3));
-            g = Integer.decode("#"+color.substring(3, 5));
-            b = Integer.decode("#"+color.substring(5, 7));
+            if (color.length() == 4) {
+                r = Integer.decode("#"+color.charAt(1)+color.charAt(1));
+                g = Integer.decode("#"+color.charAt(2)+color.charAt(2));
+                b = Integer.decode("#"+color.charAt(3)+color.charAt(3));
+            } else {
+                r = Integer.decode("#"+color.substring(1, 3));
+                g = Integer.decode("#"+color.substring(3, 5));
+                b = Integer.decode("#"+color.substring(5, 7));
+            }
             return new Color(r, g, b, a);
         }
         return new Color(255, 0, 0, 0);

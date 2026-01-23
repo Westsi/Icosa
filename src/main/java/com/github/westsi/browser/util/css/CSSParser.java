@@ -17,8 +17,37 @@ public class CSSParser {
     }
 
     private void whitespace() {
-        while (this.i < this.s.length() && Character.isWhitespace(this.s.charAt(this.i))) {
-            this.i += 1;
+//        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+//        StackTraceElement e = stacktrace[2];  //maybe this number needs to be corrected
+//        String methodName = e.getMethodName();
+//        System.out.println("whitespace called from " + methodName);
+        while (this.i < this.s.length()) {
+            if (Character.isWhitespace(this.s.charAt(this.i))) {
+                this.i++;
+            } else if (this.i + 1 < this.s.length()
+                    && this.s.charAt(this.i) == '/'
+                    && this.s.charAt(this.i + 1) == '*') {
+                skipComments();
+            } else {
+                break;
+            }
+        }
+//        System.out.println("i at end of whitespace " + this.i + ". length = " + this.s.length());
+//        System.out.println(this.s.substring(Math.max(this.i-50,0), this.i) + "####" + this.s.substring(this.i, Math.min(this.i+100, this.s.length())));
+    }
+
+    private void skipComments() {
+//        System.out.println("skipping comments");
+        while (this.i + 1 < this.s.length()
+                && this.s.charAt(this.i) == '/'
+                && this.s.charAt(this.i + 1) == '*') {
+
+            this.i += 2;
+            while (this.i + 1 < this.s.length()
+                    && !(this.s.charAt(this.i) == '*' && this.s.charAt(this.i + 1) == '/')) {
+                this.i++;
+            }
+            this.i += 2;
         }
     }
 
@@ -37,13 +66,14 @@ public class CSSParser {
         Integer start = this.i;
         while (this.i < this.s.length()) {
 //            System.out.println(this.s.charAt(this.i));
-            if (Character.isLetterOrDigit(this.s.charAt(this.i)) || "#-.%".contains("" +this.s.charAt(this.i))) {
+            if (Character.isLetterOrDigit(this.s.charAt(this.i)) || "-_.#%".contains("" +this.s.charAt(this.i))) {
                 this.i += 1;
             } else {break;}
         }
 
         if (!(this.i>start)) {
-            System.out.println("PARSING ERROR IN CSS WORD");
+            System.out.println("PARSING ERROR IN CSS WORD at index " + this.i);
+            System.out.println(this.s.substring(Math.max(this.i-50,0), this.i) + "####" + this.s.substring(this.i, Math.min(this.i+100, this.s.length())));
 //            System.out.println(this.s.substring(this.i));
             throw new Exception("Parsing error in CSS Word");
         }
@@ -53,7 +83,9 @@ public class CSSParser {
     private void literal(char literal) throws Exception {
 //        System.out.println("LITERAL " + this.s.charAt(this.i) + literal);
         if (!(this.i < this.s.length() && this.s.charAt(this.i) == literal)) {
-            System.out.println("PARSING ERROR IN CSS LITERAL");
+            System.out.println("PARSING ERROR IN CSS LITERAL. Expected '" + literal + "' but got '" +
+                    this.s.charAt(this.i) + "'.i=" + this.i);
+            System.out.println(this.s.substring(Math.max(this.i-50,0), this.i) + "####" + this.s.substring(this.i, Math.min(this.i+100, this.s.length())));
             throw new Exception("Parsing error in CSS Literal");
         }
         this.i += 1;
@@ -67,21 +99,111 @@ public class CSSParser {
         this.whitespace();
         this.literal(':');
         this.whitespace();
-        pRet.setSecond(this.word());
+        int start = this.i;
+        while (this.i < this.s.length()
+                && this.s.charAt(this.i) != ';'
+                && this.s.charAt(this.i) != '}') {
+            this.i++;
+        }
+        pRet.setSecond(this.s.substring(start, this.i).trim());
         return pRet;
     }
 
+    private ArrayList<Pair<String, String>> expandPair(Pair<String, String> p) {
+        ArrayList<Pair<String, String>> al = new ArrayList<>();
+        if (p.getFirst().equals("outline")) {
+            // need to split into width, style, color
+            // the only thing with a number is the width
+            // style could be any of the below
+            // the remaining thing is the color
+            String[] ospl = p.getSecond().split(" ");
+            if (ospl.length != 3) return al; // NOTE: silently fails if something is wrong
+            // we know length is 3
+            ArrayList<String> outlineStyles = new ArrayList<>(){{
+                add("auto");
+                add("none");
+                add("dotted");
+                add("dashed");
+                add("solid");
+                add("double");
+                add("groove");
+                add("ridge");
+                add("inset");
+                add("outset");
+            }};
+            String color = "", style = "", width = "";
+            for (String op : ospl) {
+                if (op.matches("\\d+.*")) {
+                    // number then some text
+                    width = op;
+                } else if (outlineStyles.contains(op)) {
+                    // style
+                    style = op;
+                } else {
+                    color = op;
+                }
+            }
+            al.add(new Pair<>("outline-width", width));
+            al.add(new Pair<>("outline-style", style));
+            al.add(new Pair<>("outline-color", color));
+        } else if (p.getFirst().equals("margin") || p.getFirst().equals("padding") || p.getFirst().equals("inset")) {
+            // TODO: margin auto for L/R centres horizontally - idk where best to implement this
+            // margin/padding/inset can have 1, 2, 3, or 4 values
+            // if 1: set all sides to the value
+            // if 2: first is T/B, second is L/R
+            // if 3: T, L/R, B
+            // if 4: T, R, B, L
+            // order does matter
+            String[] spl = p.getSecond().split(" ");
+            if (spl.length == 1) {
+                al.add(new Pair<>(p.getFirst()+"-top", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-bottom", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-left", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-right", spl[0]));
+            } else if (spl.length == 2) {
+                al.add(new Pair<>(p.getFirst()+"-top", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-bottom", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-left", spl[1]));
+                al.add(new Pair<>(p.getFirst()+"-right", spl[1]));
+            } else if (spl.length == 3) {
+                al.add(new Pair<>(p.getFirst()+"-top", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-bottom", spl[2]));
+                al.add(new Pair<>(p.getFirst()+"-left", spl[1]));
+                al.add(new Pair<>(p.getFirst()+"-right", spl[1]));
+            } else if (spl.length == 4) {
+                al.add(new Pair<>(p.getFirst()+"-top", spl[0]));
+                al.add(new Pair<>(p.getFirst()+"-bottom", spl[2]));
+                al.add(new Pair<>(p.getFirst()+"-left", spl[3]));
+                al.add(new Pair<>(p.getFirst()+"-right", spl[1]));
+            } else return al;
+
+        } else {
+            // if it gets to here the pair doesn't need splitting so return it
+            al.add(p);
+        }
+        return al;
+    }
+
     protected HashMap<String, String> body() {
+        this.whitespace();
+        if (this.i < this.s.length() && this.s.charAt(this.i) == '}') {
+            return new HashMap<>();
+        }
         HashMap<String, String> hRet = new HashMap<>();
         while (this.i < this.s.length() && this.s.charAt(this.i) != '}') {
             try {
-                Pair<String, String> p = this.pair();
-                hRet.put(p.getFirst(), p.getSecond());
+                Pair<String, String> _p = this.pair();
+                ArrayList<Pair<String, String>> al = this.expandPair(_p);
+                for (Pair<String, String> p : al) {
+                    hRet.put(p.getFirst(), p.getSecond());
+                }
                 this.whitespace();
                 if (this.i == this.s.length()) {
                     break;
                 }
-                this.literal(';');
+                if (this.s.charAt(this.i) == '}') {} else {
+                    this.literal(';');
+                }
                 this.whitespace();
             } catch (Exception e) {
 //                System.out.println("ISSUE in BODY" + e);
@@ -100,13 +222,49 @@ public class CSSParser {
     private ISelector selector() {
         ISelector out = new TagSelector("-ICOSAERR");
         try {
+//            if (this.i == 3317) System.out.println("WORDSHIT1");
             out = new TagSelector(this.word().toLowerCase());
             this.whitespace();
-            while (this.i < this.s.length() && this.s.charAt(this.i) != '{') {
-                String tag = this.word();
-                ISelector descendant = new TagSelector(tag.toLowerCase());
-                out = new DescendantSelector(out, descendant);
+            while (this.i < this.s.length() && this.s.charAt(this.i) != '{' && this.s.charAt(this.i) != ',') {
+                // TODO: not totally sure if this list of checks should be else or just plain ifs with checks for { between
+                if (this.s.charAt(this.i) == ':') {
+                    ignoreUntil(new ArrayList<>() {{
+                        add('{');
+                    }});
+                    // todo: add support for the ::before etc tags
+//                    System.out.println("ignored to { because of :. i = " + this.i);
+                } else if (this.s.charAt(this.i) == '~') {
+                    this.literal('~');
+                    String tag = this.word();
+                    ISelector sib2 = new TagSelector(tag.toLowerCase());
+                    out = new PreviousSiblingSelector(out, sib2);
+                } else if (this.s.charAt(this.i) == '*') {
+                    this.literal('*');
+                    out = new AllDescendantSelector(out);
+                } else if (this.s.charAt(this.i) == '+') {
+                    this.literal('+');
+                    String tag = this.word();
+                    ISelector sib2 = new TagSelector(tag.toLowerCase());
+                    out = new AdjacentSiblingSelector(out, sib2);
+                } else if (this.s.charAt(this.i) == '>') {
+                    this.literal('>');
+                    String tag = this.word();
+                    ISelector descendant = new TagSelector(tag.toLowerCase());
+                    out = new DirectDescendantSelector(out, descendant);
+                } else if (this.s.charAt(this.i) == '[') {
+                    ignoreUntil(new ArrayList<>(){{ add(']'); }});
+                    this.literal(']');
+                    // ignore this for the moment.
+                    // TODO: implement (attribute selector)
+                } else {
+                    String tag = this.word();
+                    ISelector descendant = new TagSelector(tag.toLowerCase());
+                    out = new DescendantSelector(out, descendant);
+                }
                 this.whitespace();
+            }
+            if (this.i < this.s.length() && (this.s.charAt(this.i) == ',')) {
+                ignoreUntil(new ArrayList<>(){{ add('{'); }});
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -119,14 +277,35 @@ public class CSSParser {
         while (this.i < this.s.length()) {
             try {
                 this.whitespace();
+                if (this.s.charAt(this.i) == '@') {
+                    // make this handle nested selectors in the media
+                    ignoreUntil(new ArrayList<>(){{ add('{'); }});
+                    this.literal('{');
+                    int toClose = 1;
+                    while (toClose > 0) {
+                        ignoreUntil(new ArrayList<>(){{ add('}'); add('{'); }});
+                        if (this.s.charAt(this.i) == '{') {
+                            toClose++;
+                            this.literal('{');
+                        } else {
+                            toClose--;
+                            this.literal('}');
+                        }
+                        this.whitespace();
+                    }
+
+                    continue;
+                }
                 ISelector sl = this.selector();
+                this.whitespace();
                 this.literal('{');
                 this.whitespace();
                 HashMap<String, String> bdy = this.body();
                 this.literal('}');
                 rules.add(new Pair<>(sl, bdy));
+                this.whitespace();
             } catch (Exception e) {
-                System.out.println(e);
+                System.out.println("B" + e);
                 Character why = this.ignoreUntil(new ArrayList<>(){{add('}');}});
                 if (why != null && why == ';') {
                     try {
@@ -144,7 +323,9 @@ public class CSSParser {
     private Character ignoreUntil(ArrayList<Character> chars) {
         while (this.i < this.s.length()) {
             if (chars.contains(this.s.charAt(this.i))) {
-                return this.s.charAt(this.i);
+                char c = this.s.charAt(this.i);
+//                this.i++;
+                return c;
             } else {
                 this.i += 1;
             }

@@ -113,12 +113,12 @@ public class URL {
 //            ":" + str(self.port) + url)
 
     public URL resolve(String nurl) {
-        System.out.println("nurl " + nurl);
+//        System.out.println("nurl " + nurl);
         if (nurl.contains("://")) {return new URL(nurl);}
         if (!nurl.startsWith("/")) {
-            System.out.println("NOT START WITH SLASH");
+//            System.out.println("NOT START WITH SLASH");
             String dir = splitAtLastSlash(this.url)[0];
-            System.out.println(Arrays.toString(splitAtLastSlash(this.url)));
+//            System.out.println(Arrays.toString(splitAtLastSlash(this.url)));
             while (nurl.startsWith("../")) {
                 nurl = nurl.split("/", 2)[1];
                 if (dir.contains("/")) {
@@ -128,7 +128,7 @@ public class URL {
             nurl = dir + "/" + nurl;
             return new URL(nurl);
         }
-        System.out.println("nurl2 " + nurl);
+//        System.out.println("nurl2 " + nurl);
         if (nurl.startsWith("//")) {
             return new URL("https:" + nurl);
         } else if (nurl.startsWith("/")) {

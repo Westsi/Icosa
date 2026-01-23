@@ -267,7 +267,7 @@ public class BrowserTab extends JPanel {
         ArrayList<String> cssLinks = CSSUtils.getCSSLinks(root);
         for (String link : cssLinks) {
             URL styleURL = this.url.resolve(link);
-//            System.out.println("loading css link: " + styleURL);
+            System.out.println("loading css link: " + styleURL);
             body = "";
             try {
                 body = styleURL.Request();
@@ -275,7 +275,9 @@ public class BrowserTab extends JPanel {
                 System.out.println("Stylesheet failed to load:" + styleURL.toString());
                 continue;
             }
-            rules.addAll(new CSSParser(body).parse());
+            ArrayList<Pair<ISelector, HashMap<String, String>>> ssRules = new CSSParser(body).parse();
+            System.out.println(ssRules);
+            rules.addAll(ssRules);
         }
         rules.sort(new SortByPriority());
         System.out.println(rules);
