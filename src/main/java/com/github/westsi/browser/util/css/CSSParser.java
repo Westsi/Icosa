@@ -111,7 +111,7 @@ public class CSSParser {
 
     private ArrayList<Pair<String, String>> expandPair(Pair<String, String> p) {
         ArrayList<Pair<String, String>> al = new ArrayList<>();
-        if (p.getFirst().equals("outline")) {
+        if (p.getFirst().equals("outline") || p.getFirst().equals("border")) {
             // need to split into width, style, color
             // the only thing with a number is the width
             // style could be any of the below
@@ -143,9 +143,9 @@ public class CSSParser {
                     color = op;
                 }
             }
-            al.add(new Pair<>("outline-width", width));
-            al.add(new Pair<>("outline-style", style));
-            al.add(new Pair<>("outline-color", color));
+            al.add(new Pair<>(p.getFirst()+"-width", width));
+            al.add(new Pair<>(p.getFirst()+"-style", style));
+            al.add(new Pair<>(p.getFirst()+"-color", color));
         } else if (p.getFirst().equals("margin") || p.getFirst().equals("padding") || p.getFirst().equals("inset")) {
             // TODO: margin auto for L/R centres horizontally - idk where best to implement this
             // margin/padding/inset can have 1, 2, 3, or 4 values
@@ -177,6 +177,57 @@ public class CSSParser {
                 al.add(new Pair<>(p.getFirst()+"-right", spl[1]));
             } else return al;
 
+        } else if (p.getFirst().equals("border-width") || p.getFirst().equals("border-style") || p.getFirst().equals("border-color")) {
+            // these are the same as above, but instead of border-width-left it is border-left-width
+            String[] spl = p.getSecond().split(" ");
+            String[] ps = p.getFirst().split("-");
+            String o = ps[0];
+            String t = ps[1];
+            if (spl.length == 1) {
+                al.add(new Pair<>(o+"-top-"+t, spl[0]));
+                al.add(new Pair<>(o+"-bottom-"+t, spl[0]));
+                al.add(new Pair<>(o+"-left-"+t, spl[0]));
+                al.add(new Pair<>(o+"-right-"+t, spl[0]));
+            } else if (spl.length == 2) {
+                al.add(new Pair<>(o+"-top-"+t, spl[0]));
+                al.add(new Pair<>(o+"-bottom-"+t, spl[0]));
+                al.add(new Pair<>(o+"-left-"+t, spl[1]));
+                al.add(new Pair<>(o+"-right-"+t, spl[1]));
+            } else if (spl.length == 3) {
+                al.add(new Pair<>(o+"-top-"+t, spl[0]));
+                al.add(new Pair<>(o+"-bottom-"+t, spl[2]));
+                al.add(new Pair<>(o+"-left-"+t, spl[1]));
+                al.add(new Pair<>(o+"-right-"+t, spl[1]));
+            } else if (spl.length == 4) {
+                al.add(new Pair<>(o+"-top-"+t, spl[0]));
+                al.add(new Pair<>(o+"-bottom-"+t, spl[2]));
+                al.add(new Pair<>(o+"-left-"+t, spl[3]));
+                al.add(new Pair<>(o+"-right-"+t, spl[1]));
+            } else return al;
+        } else if (p.getFirst().equals("border-radius")) {
+            // top left, top right, bottom right, bottom left
+            String[] spl = p.getSecond().split(" ");
+            if (spl.length == 1) {
+                al.add(new Pair<>("border-top-left-radius", spl[0]));
+                al.add(new Pair<>("border-top-right-radius", spl[0]));
+                al.add(new Pair<>("border-bottom-right-radius", spl[0]));
+                al.add(new Pair<>("border-bottom-left-radius", spl[0]));
+            } else if (spl.length == 2) {
+                al.add(new Pair<>("border-top-left-radius", spl[0]));
+                al.add(new Pair<>("border-top-right-radius", spl[1]));
+                al.add(new Pair<>("border-bottom-right-radius", spl[0]));
+                al.add(new Pair<>("border-bottom-left-radius", spl[1]));
+            } else if (spl.length == 3) {
+                al.add(new Pair<>("border-top-left-radius", spl[0]));
+                al.add(new Pair<>("border-top-right-radius", spl[1]));
+                al.add(new Pair<>("border-bottom-right-radius", spl[2]));
+                al.add(new Pair<>("border-bottom-left-radius", spl[1]));
+            } else if (spl.length == 4) {
+                al.add(new Pair<>("border-top-left-radius", spl[0]));
+                al.add(new Pair<>("border-top-right-radius", spl[2]));
+                al.add(new Pair<>("border-bottom-right-radius", spl[3]));
+                al.add(new Pair<>("border-bottom-left-radius", spl[1]));
+            } else return al;
         } else {
             // if it gets to here the pair doesn't need splitting so return it
             al.add(p);
@@ -197,6 +248,7 @@ public class CSSParser {
                 for (Pair<String, String> p : al) {
                     hRet.put(p.getFirst(), p.getSecond());
                 }
+//                hRet.put(_p.getFirst(), _p.getSecond());
                 this.whitespace();
                 if (this.i == this.s.length()) {
                     break;

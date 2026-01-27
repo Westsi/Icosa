@@ -1,5 +1,6 @@
 package com.github.westsi.browser.util.css;
 
+import com.github.westsi.browser.Browser;
 import com.github.westsi.browser.layout.ILayoutElement;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.html.HTMLElement;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CSSUtils {
     public static final HashMap<String, String> COLOR_MAP = createColorMap();
@@ -19,24 +22,24 @@ public class CSSUtils {
         node.setStyle(new HashMap<>());
 
         // apply inherited properties
-//        for (String prop : INHERITED_PROPERTIES.keySet()) {
-//            if (node.getParent() != null) {
-//                node.addStyle(prop, node.getParent().getStyle().get(prop));
-//            } else {
-//                node.addStyle(prop, INHERITED_PROPERTIES.get(prop));
-//            }
-//        }
-
-        // to try to make it so everything is inherited from parents
-        if (node.getParent() != null) {
-            for (String prop : node.getParent().getStyle().keySet()) {
+        for (String prop : INHERITED_PROPERTIES.keySet()) {
+            if (node.getParent() != null) {
                 node.addStyle(prop, node.getParent().getStyle().get(prop));
-            }
-        } else {
-            for (String prop : INHERITED_PROPERTIES.keySet()) {
+            } else {
                 node.addStyle(prop, INHERITED_PROPERTIES.get(prop));
             }
         }
+
+        // Not correct because not everything inherits
+//        if (node.getParent() != null) {
+//            for (String prop : node.getParent().getStyle().keySet()) {
+//                node.addStyle(prop, node.getParent().getStyle().get(prop));
+//            }
+//        } else {
+//            for (String prop : INHERITED_PROPERTIES.keySet()) {
+//                node.addStyle(prop, INHERITED_PROPERTIES.get(prop));
+//            }
+//        }
 
         // now apply rules
         for (Pair<ISelector, HashMap<String, String>> pair : rules) {
@@ -77,6 +80,108 @@ public class CSSUtils {
         for (HTMLElement child : node.getChildren()) {
             styleNode(child, rules);
         }
+    }
+
+    public static Integer resolveSize(String s, HTMLElement node) {
+        // size could be in:
+        // in, cm, mm, px, pt, pc, em, ex, ch, rem, vw, vh, vmin, vmax, or % (or could be just 0)
+        // this returns the size in pixels for the current screen
+        if (s.equals("0")) return 0;
+
+        Pattern p = Pattern.compile("^(-?\\d*\\.?\\d+)([a-zA-Z%]+)$");
+        Matcher m = p.matcher(s);
+
+        if (!m.matches()) return 100000000;
+
+        double value = Double.parseDouble(m.group(1));
+        String unit = m.group(2);
+
+        String o = value+unit+" => "; // 50.0
+        switch (unit) {
+            // These are the absolute units.
+            case "in":
+                // 1in = 96px
+                value *= 96;
+                break;
+            case "cm":
+                // 1cm = 96/2.54px
+                value = value * (96/2.54);
+                break;
+            case "mm":
+                // 1mm = 96/25.4px
+                value = value * (96/25.4);
+                break;
+            case "px":
+                break;
+            case "pt":
+                // 3pt = 4px
+                value = value * 4/3;
+                break;
+            case "pc":
+                // 1pc = 12pt = 16px
+                value = value * 16;
+                break;
+            // Now we get to the annoying relative ones
+            // em needs PARENT's font size (1em = 1*font size)
+            // ex needs x-height of current element font
+            // ch needs width of '0' in current element font
+            // rem needs font size of root element (document)
+            // vw, vh, vmax, and vmin need the size of the screen (all refer to 1% of the dimension)
+            // % needs the attribute of the parent (e.g. width of parent if the element has width:50%)
+
+            case "em":
+                Integer parentFontSize = resolveSize(node.getParent().getStyle().get("font-size"), node.getParent());
+                value = value * parentFontSize;
+                break;
+            case "ex":
+                Integer thisFontSize = resolveSize(node.getParent().getStyle().get("font-size"), node.getParent());
+                FontMetrics fm = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN).deriveFont(Font.PLAIN, thisFontSize));
+                value = value * fm.getHeight();
+                break;
+            case "ch":
+                Integer chthisFontSize = resolveSize(node.getParent().getStyle().get("font-size"), node.getParent());
+                FontMetrics chfm = new Canvas().getFontMetrics(Browser.fonts.get(Font.PLAIN).deriveFont(Font.PLAIN, chthisFontSize));
+                value = value * chfm.stringWidth("0");
+                break;
+            case "rem":
+                HTMLElement cn = node;
+                while (cn.getParent() != null) {
+                    cn = node.getParent();
+                }
+                Integer rootFontSize = resolveSize(cn.getStyle().get("font-size"), cn);
+                value = value * rootFontSize;
+                break;
+            case "vw":
+                double vw = ((double) Browser.getInstance().WIDTH)/100;
+                value = value * vw;
+                break;
+            case "vh":
+                double vh = ((double) Browser.getInstance().HEIGHT)/100;
+                value = value * vh;
+                break;
+            case "vmax":
+                double vmax = Math.max(((double) Browser.getInstance().WIDTH)/100, ((double) Browser.getInstance().HEIGHT)/100);
+                value = value * vmax;
+                break;
+            case "vmin":
+                double vmin = Math.min(((double) Browser.getInstance().WIDTH)/100, ((double) Browser.getInstance().HEIGHT)/100);
+                value = value * vmin;
+                break;
+            case "%":
+                // this needs to know what style is being looked at - pass as argument? or just prematurely pass parent's style too?
+                // as a temporary stopgap // TODO: fix properly
+                String style = "ICOSAERR";
+                for (Map.Entry<String, String> entry : node.getStyle().entrySet()) {
+                    if (entry.getValue().equals(s)) style = entry.getKey();
+                }
+                String parentStyle = node.getParent().getStyle().getOrDefault(style, "0");
+                Integer pStyle = resolveSize(parentStyle, node.getParent());
+                value = value * pStyle / 100;
+                break;
+
+        }
+//        System.out.println(o + value + "px");
+        return (int) value;
     }
 
     public static Color cssColorToJava(String color) {
@@ -154,10 +259,43 @@ public class CSSUtils {
 
     private static HashMap<String, String> createInheritedProperties() {
         HashMap<String, String> m = new HashMap<>();
+
+        /* ---- Font & text ---- */
+        m.put("font-family", "serif");
         m.put("font-size", "16px");
         m.put("font-style", "normal");
         m.put("font-weight", "normal");
+        m.put("font-variant", "normal");
+        m.put("font-stretch", "normal");
+        m.put("line-height", "normal");
+
         m.put("color", "black");
+
+        m.put("letter-spacing", "normal");
+        m.put("word-spacing", "normal");
+        m.put("text-align", "start");
+        m.put("text-indent", "0");
+        m.put("text-transform", "none");
+        m.put("white-space", "normal");
+
+        /* ---- Writing & direction ---- */
+        m.put("direction", "ltr");
+        m.put("unicode-bidi", "normal");
+        m.put("writing-mode", "horizontal-tb");
+        m.put("text-orientation", "mixed");
+
+        /* ---- Lists ---- */
+        m.put("list-style-type", "disc");
+        m.put("list-style-position", "outside");
+        m.put("list-style-image", "none");
+
+        /* ---- Visibility & UI ---- */
+        m.put("visibility", "visible");
+        m.put("cursor", "auto");
+
+        /* ---- Quotes ---- */
+        m.put("quotes", "auto");
+
         return m;
     }
 

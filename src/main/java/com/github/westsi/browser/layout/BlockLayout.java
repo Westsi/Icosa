@@ -2,6 +2,7 @@ package com.github.westsi.browser.layout;
 
 
 import com.github.westsi.browser.Browser;
+import com.github.westsi.browser.BrowserTab;
 import com.github.westsi.browser.layout.drawn.DrawOutline;
 import com.github.westsi.browser.layout.drawn.DrawRect;
 import com.github.westsi.browser.layout.drawn.DrawText;
@@ -94,22 +95,73 @@ public class BlockLayout implements ILayoutElement{
         TEXTUAL_ELEMENTS.add("em");
         TEXTUAL_ELEMENTS.add("big");
         TEXTUAL_ELEMENTS.add("small");
+        TEXTUAL_ELEMENTS.add("a");
     }
 
     @Override
     public void layout() {
+        if (this.node instanceof HTMLTag) {
+            System.out.println(((HTMLTag) this.node).getTag());
+            if (((HTMLTag) this.node).getTag().equals("head")) {
+//                System.out.println("returning head");
+                return;
+            }
+        }
         this.x = this.parent.getX();
 //        System.out.println(((HTMLTag) this.parent.getNode()).getTag());
-        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
+//        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
 //            System.out.println("LI INCREMENT");
-            this.textIndent = 16;
-        }
-        this.width = this.parent.getWidth();
+//            this.textIndent = 16;
+//        }
+        String maxWidth = this.node.getStyle().getOrDefault("max-width", "100000000px");
+        Integer maxW = CSSUtils.resolveSize(maxWidth, this.node);
+        Integer top = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("top", "0"), this.node);
+        Integer marginTop = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-top", "0"), this.node);
+        // TODO: these should be resolved into their respective margins based on write direction at some point
+        // TODO: and then they also need to have cascading rules - idk where is best to do this
+//        Integer marginBlockStart = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-block-start", "0"), this.node);
+//        Integer marginBlockEnd = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-block-end", "0"), this.node);
+//        Integer marginInlineStart = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-inline-start", "0"), this.node);
+//        Integer marginInlineEnd = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-inline-end", "0"), this.node);
+        String ml = this.node.getStyle().get("margin-left");
+        String mr = this.node.getStyle().get("margin-right");
+        Integer bottom = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("bottom", "0"), this.node);
+        Integer marginBottom = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-bottom", "0"), this.node);
+
+
+//        if (top + marginTop != 0) System.out.println("top=" + top + ";margin-top=" + marginTop);
+
+        // TODO: this seems to have broken resizing the window sometimes
+        this.width = Math.min(this.parent.getWidth(), maxW);
         if (this._previous != null) {
             this.y = this._previous.getY() + this._previous.getHeight();
         } else {
             this.y = this.parent.getY();
         }
+
+        this.y += top + marginTop;
+
+        if (ml != null && mr != null) {
+            if (ml.equals("auto") && mr.equals("auto")) {
+                // center horizontally
+                // x = left side
+                Integer totalemptyspace = Browser.getInstance().WIDTH - this.width - this.x;
+                if (totalemptyspace > 0) {
+                    this.x += totalemptyspace / 2;
+                }
+            } else {
+                Integer marginLeft = CSSUtils.resolveSize(ml, this.node);
+                Integer marginRight = CSSUtils.resolveSize(mr, this.node);
+                this.x += marginLeft;
+                this.width -= marginRight; // TODO: is this the right way to do this?
+            }
+        }
+
+        // TODO: idk if this works
+        if (this.node.getStyle().getOrDefault("float", "").equals("right")) {
+            this.x = Browser.getInstance().WIDTH - this.width - HSTEP;
+        }
+
         String mode = this.layoutMode();
         if (Objects.equals(mode, "block")) {
             ILayoutElement previous = null;
@@ -140,6 +192,14 @@ public class BlockLayout implements ILayoutElement{
         for (ILayoutElement child : this.children) {
             this.height += child.getHeight();
         }
+
+        this.height += bottom + marginBottom;
+
+        if (this.node instanceof HTMLTag && ((HTMLTag) node).getTag().equals("h1")) {
+            System.out.println("h1 {" + this.node.getChildren() + "} dimensions: x="+x+";y="+y+";width="+width+";height="+height);
+            System.out.println("\t\t" + this.node.getStyle());
+        }
+
 
 //        if (Objects.equals(mode, "block")) {
 //            for (ILayoutElement child : this.children) {
@@ -175,7 +235,7 @@ public class BlockLayout implements ILayoutElement{
             } else {
                 // the child is a tag that is not textual, so is not added to the paragraph
                 // the paragraph must also be added beforehand
-                newNodeChildren.add(newP);
+                if (!newP.getChildren().isEmpty()) newNodeChildren.add(newP);
                 newP = new HTMLTag("p", this.node);
                 newNodeChildren.add(child);
             }

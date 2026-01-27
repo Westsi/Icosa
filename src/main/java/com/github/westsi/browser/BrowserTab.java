@@ -283,6 +283,7 @@ public class BrowserTab extends JPanel {
         System.out.println(rules);
         CSSUtils.styleNode(root, rules);
         this.document = new DocumentLayout(root);
+        // TODO: apply css stuff like bottom/top/left/right/margin/padding on layout
         this.document.layout();
         this.displayList = new ArrayList<>();
         paint_tree(this.document, this.displayList);
