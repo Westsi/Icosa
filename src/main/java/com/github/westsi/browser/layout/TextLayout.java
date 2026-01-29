@@ -89,7 +89,7 @@ public class TextLayout implements ILayoutElement {
         if (textDeco != null) {
 //            System.out.println(node.getStyle());
         }
-        Integer size = (int) (Float.parseFloat(ssize.substring(0, ssize.length()-2)) * 0.75);
+        Integer size = (int) (CSSUtils.resolveSize(ssize, node) * 0.75);
 //        if (size != 12) System.out.println("font size " + size);
         underlined = Objects.equals(textDeco, "underline");
         if (Objects.equals(style, "normal")) {

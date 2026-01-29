@@ -111,7 +111,21 @@ public class CSSParser {
 
     private ArrayList<Pair<String, String>> expandPair(Pair<String, String> p) {
         ArrayList<Pair<String, String>> al = new ArrayList<>();
-        if (p.getFirst().equals("outline") || p.getFirst().equals("border")) {
+        ArrayList<String> outlineStyles = new ArrayList<>(){{
+            add("auto");
+            add("none");
+            add("dotted");
+            add("dashed");
+            add("solid");
+            add("double");
+            add("groove");
+            add("ridge");
+            add("inset");
+            add("outset");
+        }};
+
+        if (p.getFirst().equals("outline") || p.getFirst().equals("border-bottom")
+            || p.getFirst().equals("border-top") || p.getFirst().equals("border-left") || p.getFirst().equals("border-right")) {
             // need to split into width, style, color
             // the only thing with a number is the width
             // style could be any of the below
@@ -119,18 +133,7 @@ public class CSSParser {
             String[] ospl = p.getSecond().split(" ");
             if (ospl.length != 3) return al; // NOTE: silently fails if something is wrong
             // we know length is 3
-            ArrayList<String> outlineStyles = new ArrayList<>(){{
-                add("auto");
-                add("none");
-                add("dotted");
-                add("dashed");
-                add("solid");
-                add("double");
-                add("groove");
-                add("ridge");
-                add("inset");
-                add("outset");
-            }};
+
             String color = "", style = "", width = "";
             for (String op : ospl) {
                 if (op.matches("\\d+.*")) {
@@ -146,6 +149,29 @@ public class CSSParser {
             al.add(new Pair<>(p.getFirst()+"-width", width));
             al.add(new Pair<>(p.getFirst()+"-style", style));
             al.add(new Pair<>(p.getFirst()+"-color", color));
+        } else if ( p.getFirst().equals("border")) {
+            String[] ospl = p.getSecond().split(" ");
+            if (ospl.length != 3) return al; // NOTE: silently fails if something is wrong
+            // we know length is 3
+
+            String color = "", style = "", width = "";
+            for (String op : ospl) {
+                if (op.matches("\\d+.*")) {
+                    // number then some text
+                    width = op;
+                } else if (outlineStyles.contains(op)) {
+                    // style
+                    style = op;
+                } else {
+                    color = op;
+                }
+            }
+            ArrayList<String> sides = new ArrayList<>() {{add("bottom"); add("top"); add("left"); add("right");}};
+            for (String side : sides) {
+                al.add(new Pair<>("border-"+side+"-width", width));
+                al.add(new Pair<>("border-"+side+"-style", style));
+                al.add(new Pair<>("border-"+side+"-color", color));
+            }
         } else if (p.getFirst().equals("margin") || p.getFirst().equals("padding") || p.getFirst().equals("inset")) {
             // TODO: margin auto for L/R centres horizontally - idk where best to implement this
             // margin/padding/inset can have 1, 2, 3, or 4 values
@@ -283,6 +309,8 @@ public class CSSParser {
                     ignoreUntil(new ArrayList<>() {{
                         add('{');
                     }});
+                    // line below to be removed when support added
+                    out = new TagSelector("-ICOSAERR");
                     // todo: add support for the ::before etc tags
 //                    System.out.println("ignored to { because of :. i = " + this.i);
                 } else if (this.s.charAt(this.i) == '~') {

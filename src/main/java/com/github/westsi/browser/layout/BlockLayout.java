@@ -3,10 +3,7 @@ package com.github.westsi.browser.layout;
 
 import com.github.westsi.browser.Browser;
 import com.github.westsi.browser.BrowserTab;
-import com.github.westsi.browser.layout.drawn.DrawOutline;
-import com.github.westsi.browser.layout.drawn.DrawRect;
-import com.github.westsi.browser.layout.drawn.DrawText;
-import com.github.westsi.browser.layout.drawn.IDrawCmd;
+import com.github.westsi.browser.layout.drawn.*;
 import com.github.westsi.browser.util.Pair;
 import com.github.westsi.browser.util.StyledString;
 import com.github.westsi.browser.util.Quartet;
@@ -109,12 +106,12 @@ public class BlockLayout implements ILayoutElement{
         }
         this.x = this.parent.getX();
 //        System.out.println(((HTMLTag) this.parent.getNode()).getTag());
-//        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
-//            System.out.println("LI INCREMENT");
-//            this.textIndent = 16;
-//        }
+        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
+            this.x += 16;
+        }
         String maxWidth = this.node.getStyle().getOrDefault("max-width", "100000000px");
         Integer maxW = CSSUtils.resolveSize(maxWidth, this.node);
+        Integer cssWidth = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("width", "0"), this.node);
         Integer top = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("top", "0"), this.node);
         Integer marginTop = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("margin-top", "0"), this.node);
         // TODO: these should be resolved into their respective margins based on write direction at some point
@@ -132,7 +129,11 @@ public class BlockLayout implements ILayoutElement{
 //        if (top + marginTop != 0) System.out.println("top=" + top + ";margin-top=" + marginTop);
 
         // TODO: this seems to have broken resizing the window sometimes
-        this.width = Math.min(this.parent.getWidth(), maxW);
+        if (cssWidth == 0) {
+            this.width = Math.min(this.parent.getWidth(), maxW);
+        } else {
+            this.width = cssWidth;
+        }
         if (this._previous != null) {
             this.y = this._previous.getY() + this._previous.getHeight();
         } else {
@@ -159,7 +160,8 @@ public class BlockLayout implements ILayoutElement{
 
         // TODO: idk if this works
         if (this.node.getStyle().getOrDefault("float", "").equals("right")) {
-            this.x = Browser.getInstance().WIDTH - this.width - HSTEP;
+            System.out.println("floating, width = " + width);
+            this.x = this.parent.getX() + this.parent.getWidth();
         }
 
         String mode = this.layoutMode();
@@ -195,8 +197,8 @@ public class BlockLayout implements ILayoutElement{
 
         this.height += bottom + marginBottom;
 
-        if (this.node instanceof HTMLTag && ((HTMLTag) node).getTag().equals("h1")) {
-            System.out.println("h1 {" + this.node.getChildren() + "} dimensions: x="+x+";y="+y+";width="+width+";height="+height);
+        if (this.node instanceof HTMLTag && ((HTMLTag) node).getTag().equals("nav")) {
+            System.out.println("nav {" + this.node.getChildren() + "} dimensions: x="+x+";y="+y+";width="+width+";height="+height);
             System.out.println("\t\t" + this.node.getStyle());
         }
 
@@ -276,7 +278,7 @@ public class BlockLayout implements ILayoutElement{
         String style = node.getStyle().get("font-style");
         String ssize = node.getStyle().get("font-size");
         //        if style == "normal": style = "roman"
-        Integer size = (int) (Float.parseFloat(ssize.substring(0, ssize.length()-2)) * 0.75);
+        Integer size = (int) (CSSUtils.resolveSize(ssize, this.node) * 0.75);
         if (Objects.equals(style, "normal")) {
             fontFlag = Font.PLAIN;
         } else if (Objects.equals(style, "italic")) {
@@ -395,6 +397,12 @@ public class BlockLayout implements ILayoutElement{
 
     public ArrayList<IDrawCmd> paint() {
         ArrayList<IDrawCmd> cmds = new ArrayList<>();
+        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
+            Integer fs = CSSUtils.resolveSize(this.node.getStyle().get("font-size"), this.node);
+            // todo: implement coloring based on font color
+            DrawCircle dot = new DrawCircle(this.x-16, this.y, fs, fs, Color.BLACK);
+            cmds.add(dot);
+        }
         String bgColor = this.node.getStyle().getOrDefault("background-color", "transparent");
         if (!Objects.equals(bgColor, "transparent")) {
             Integer x2 = this.x + this.width;
@@ -402,17 +410,72 @@ public class BlockLayout implements ILayoutElement{
             DrawRect rect = new DrawRect(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(bgColor));
             cmds.add(rect);
         }
+
+        // TODO: a similar thing for border (remember this can be more complex to CSSParser and here - look in nav#toc border-bottom)
         String outlineWidth = this.node.getStyle().getOrDefault("outline-width", null);
         if (outlineWidth != null) {
             Integer x2 = this.x + this.width;
             Integer y2 = this.y + this.height;
-            outlineWidth = outlineWidth.replaceAll("\\D.*", "");
-            Integer intoutlineWidth = !outlineWidth.isEmpty() ? Integer.parseInt(outlineWidth) : 1;
+            Integer intoutlineWidth = CSSUtils.resolveSize(outlineWidth, this.node);
             String color = this.node.getStyle().getOrDefault("outline-color", null);
             String style = this.node.getStyle().getOrDefault("outline-style", null);
             if (color != null && style != null) {
-                DrawOutline outlineCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(color), style, intoutlineWidth);
+                DrawOutline outlineCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(color), style,
+                        intoutlineWidth, true, true, true, true);
                 cmds.add(outlineCmd);
+            }
+        }
+
+        Integer bottomBorderW = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("border-bottom-width", "0"), this.node);
+        Integer leftBorderW = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("border-left-width", "0"), this.node);
+        Integer rightBorderW = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("border-right-width", "0"), this.node);
+        Integer topBorderW = CSSUtils.resolveSize(this.node.getStyle().getOrDefault("border-top-width", "0"), this.node);
+
+        if (bottomBorderW != 0) {
+            Integer x2 = this.x + this.width;
+            Integer y2 = this.y + this.height;
+            String borderBottomColor = this.node.getStyle().getOrDefault("border-bottom-color", null);
+            String borderBottomStyle = this.node.getStyle().getOrDefault("border-bottom-style", null);
+            if (borderBottomColor != null && borderBottomStyle != null) {
+                DrawOutline borderBottomCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(borderBottomColor), borderBottomStyle,
+                        bottomBorderW, false, false, false, true);
+                cmds.add(borderBottomCmd);
+            }
+        }
+
+        if (leftBorderW != 0) {
+            Integer x2 = this.x + this.width;
+            Integer y2 = this.y + this.height;
+            String borderLeftColor = this.node.getStyle().getOrDefault("border-left-color", null);
+            String borderLeftStyle = this.node.getStyle().getOrDefault("border-left-style", null);
+            if (borderLeftColor != null && borderLeftStyle != null) {
+                DrawOutline borderLeftCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(borderLeftColor), borderLeftStyle,
+                        leftBorderW, true, false, false, false);
+                cmds.add(borderLeftCmd);
+            }
+        }
+
+        if (rightBorderW != 0) {
+            Integer x2 = this.x + this.width;
+            Integer y2 = this.y + this.height;
+            String borderRightColor = this.node.getStyle().getOrDefault("border-right-color", null);
+            String borderRightStyle = this.node.getStyle().getOrDefault("border-right-style", null);
+            if (borderRightColor != null && borderRightStyle != null) {
+                DrawOutline borderRightCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(borderRightColor), borderRightStyle,
+                        rightBorderW, true, false, false, false);
+                cmds.add(borderRightCmd);
+            }
+        }
+
+        if (topBorderW != 0) {
+            Integer x2 = this.x + this.width;
+            Integer y2 = this.y + this.height;
+            String borderTopColor = this.node.getStyle().getOrDefault("border-top-color", null);
+            String borderTopStyle = this.node.getStyle().getOrDefault("border-top-style", null);
+            if (borderTopColor != null && borderTopStyle != null) {
+                DrawOutline borderRightCmd = new DrawOutline(this.x, this.y, x2, y2, CSSUtils.cssColorToJava(borderTopColor), borderTopStyle,
+                        topBorderW, true, false, false, false);
+                cmds.add(borderRightCmd);
             }
         }
 
