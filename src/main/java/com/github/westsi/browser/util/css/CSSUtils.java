@@ -130,7 +130,12 @@ public class CSSUtils {
             // % needs the attribute of the parent (e.g. width of parent if the element has width:50%)
 
             case "em":
-                Integer parentFontSize = resolveSize(node.getParent().getStyle().get("font-size"), node.getParent());
+                Integer parentFontSize;
+                try {
+                    parentFontSize = resolveSize(node.getParent().getStyle().get("font-size"), node.getParent());
+                } catch (Exception e) {
+                    parentFontSize = 16;
+                }
                 value = value * parentFontSize;
                 break;
             case "ex":

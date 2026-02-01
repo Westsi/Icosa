@@ -76,7 +76,7 @@ public class BrowserTab extends JPanel {
             } else { //scroll type == MouseWheelEvent.WHEEL_BLOCK_SCROLL
                 message += "Scroll type: WHEEL_BLOCK_SCROLL\n";
             }
-            scrolled = Math.min(Math.max(0, scrolled), this.document.getHeight());
+            scrolled = Math.min(Math.max(0, scrolled), this.document.getHeight()+Browser.getInstance().HEIGHT);
 //            System.out.println(message + scrolled);
         });
 

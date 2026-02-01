@@ -33,7 +33,7 @@ public class DrawCircle implements IDrawCmd {
     public void execute(BrowserTab ctx, Graphics g) {
         Color oldcolor = g.getColor();
         g.setColor(this.color);
-        g.fillOval(this.left, this.top - ctx.getScrolled(), this.right-this.left- BrowserTab.HSTEP, this.bottom - this.top);
+        g.fillOval(this.left, this.top - ctx.getScrolled(), this.right-this.left, this.bottom - this.top);
         g.setColor(oldcolor);
     }
 }

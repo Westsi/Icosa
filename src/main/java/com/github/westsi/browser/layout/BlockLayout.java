@@ -107,6 +107,7 @@ public class BlockLayout implements ILayoutElement{
         this.x = this.parent.getX();
 //        System.out.println(((HTMLTag) this.parent.getNode()).getTag());
         if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
+//            System.out.println("incrementing x for ul");
             this.x += 16;
         }
         String maxWidth = this.node.getStyle().getOrDefault("max-width", "100000000px");
@@ -397,10 +398,11 @@ public class BlockLayout implements ILayoutElement{
 
     public ArrayList<IDrawCmd> paint() {
         ArrayList<IDrawCmd> cmds = new ArrayList<>();
-        if (Objects.equals(((HTMLTag) this.parent.getNode()).getTag(), "ul")) {
+        if (this.node instanceof HTMLTag && Objects.equals(((HTMLTag) this.node).getTag(), "li")) {
+//            System.out.println("adding circle for ul; " + this.node.getChildren() + this.node.getParent());
             Integer fs = CSSUtils.resolveSize(this.node.getStyle().get("font-size"), this.node);
             // todo: implement coloring based on font color
-            DrawCircle dot = new DrawCircle(this.x-16, this.y, fs, fs, Color.BLACK);
+            DrawCircle dot = new DrawCircle(this.x-16, this.y+fs/4, this.x-16+fs/2, this.y+3*fs/4, Color.BLACK);
             cmds.add(dot);
         }
         String bgColor = this.node.getStyle().getOrDefault("background-color", "transparent");
